@@ -1,9 +1,10 @@
 FROM golang:latest
-EXPOSE 1323
 
-WORKDIR /usr/src/app/go-api
+EXPOSE $PORT
 
-COPY . /usr/src/app/go-api
+WORKDIR /usr/src/app/api
+
+COPY . /usr/src/app/api
 
 RUN go mod download
 
