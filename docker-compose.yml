@@ -1,0 +1,53 @@
+version: "3.3"
+services:
+    project-manager-api:
+        build:
+            context: ./api
+            dockerfile: Dockerfile
+        container_name: project-manager-api
+        restart: always
+        depends_on:
+            - project-manager-db
+        ports:
+            - 1323:1323
+        volumes:
+            - ./api:/usr/src/app/go-api
+    project-manager-frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        container_name: project-manager-frontend
+        restart: always
+        depends_on:
+            - project-manager-api
+        ports:
+            - 80:5000
+        volumes:
+            - ./frontend:/usr/src/app/frontend
+            - /usr/src/app/frontend/node_modules
+    project-manager-db:
+        image: mongo:latest
+        container_name: project-manager-db
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: root
+            MONGO_INITDB_ROOT_PASSWORD: rootpassword
+            MONGO_INITDB_DATABASE: projects
+        ports:
+            - 27017:27017
+        restart: always
+        volumes:
+            - todo_app_data_container:/data/db
+    project-manager-mongo-express:
+        image: mongo-express:latest
+        container_name: project-manager-mongo-express
+        environment:
+            ME_CONFIG_MONGODB_SERVER: "project-manager-db"
+            ME_CONFIG_MONGODB_ADMINUSERNAME: root
+            ME_CONFIG_MONGODB_ADMINPASSWORD: rootpassword
+        depends_on:
+            - project-manager-db
+        ports:
+            - 1324:8081
+        restart: always
+volumes:
+  todo_app_data_container:
