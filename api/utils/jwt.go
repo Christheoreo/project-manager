@@ -9,13 +9,14 @@ import (
 
 func CreateToken(userIdAsString string) (string, error) {
 
-	t := jwt.New(jwt.GetSigningMethod("RS256"))
-
-	t.Claims =
+	token := jwt.New(jwt.SigningMethodHS256)
+	token.Claims =
 		&jwt.StandardClaims{
 			Subject:   userIdAsString,
 			ExpiresAt: time.Now().Add(time.Minute * 1).Unix(),
 		}
 
-	return t.SignedString(os.Getenv("JWT_KEY"))
+	jwtKey := os.Getenv("JWT_KEY")
+
+	return token.SignedString([]byte(jwtKey))
 }
