@@ -20,9 +20,7 @@ const ContextUserKey ContextKey = "user"
 // Middleware function, which will be called for each request
 func (m *JWTMiddleware) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		tokenString := r.Header.Get("Authorization")
-		tokenArray := strings.Split(tokenString, " ")
-		tokenString = tokenArray[1]
+		tokenString := strings.Split(r.Header.Get("Authorization"), " ")[1]
 
 		userId, err := utils.ParseToken(tokenString)
 
