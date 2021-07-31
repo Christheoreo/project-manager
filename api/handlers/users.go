@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/Christheoreo/project-manager/dtos"
+	"github.com/Christheoreo/project-manager/middleware"
 	"github.com/Christheoreo/project-manager/models"
 )
 
@@ -63,8 +64,6 @@ func (h *UserHandler) validateNewUserDto(body io.Reader) (newUser dtos.NewUserDt
 }
 
 func (h *UserHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	newUser, errMessages, err := h.validateNewUserDto(r.Body)
 
 	if err != nil {
@@ -105,5 +104,10 @@ func (h *UserHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	returnObjectResponse(w, http.StatusCreated, user)
+}
+
+func (h *UserHandler) GetRequester(w http.ResponseWriter, r *http.Request) {
+	user := r.Context().Value(middleware.ContextUserKey)
+	returnObjectResponse(w, http.StatusOK, user)
 
 }

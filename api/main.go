@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/Christheoreo/project-manager/database"
 	"github.com/Christheoreo/project-manager/handlers"
+	"github.com/Christheoreo/project-manager/middleware"
 	"github.com/Christheoreo/project-manager/models"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -35,11 +35,15 @@ func main() {
 
 	r := mux.NewRouter()
 
+	// Set up collections
 	userCollection := client.Database("projects").Collection("users")
+
+	// Set up models
 	userModel := models.User{
 		Collection: userCollection,
 	}
 
+	// Set up handlers
 	userHandler := handlers.UserHandler{
 		UserModel: userModel,
 	}
@@ -48,16 +52,27 @@ func main() {
 		UserModel: userModel,
 	}
 
-	r.HandleFunc("/", HomeHandler).Methods("GET")
+	// Set up middleware
+	jwtMiddleware := middleware.JWTMiddleware{
+		UserModel: userModel,
+	}
+
+	// Applying top level middleware
+	r.Use(middleware.HeadersMiddleware)
+
+	// Unprotected routes
 	r.HandleFunc("/users/register", userHandler.RegisterHandler).Methods("POST")
 	r.HandleFunc("/auth/login", authHandler.LoginHandler).Methods("POST")
 
+	//pR = protectedRoutes
+	pR := r.PathPrefix("/").Subrouter()
+
+	// Apply middleware
+	pR.Use(jwtMiddleware.Middleware)
+
+	// Define routes
+	pR.HandleFunc("/users/me", userHandler.GetRequester).Methods("GET")
+
 	port := fmt.Sprintf(":%s", os.Getenv("PORT"))
 	http.ListenAndServe(port, r)
-}
-
-func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	io.WriteString(w, `{"message": "Hello!"}`)
 }

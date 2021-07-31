@@ -45,8 +45,6 @@ func (h *AuthHandler) validateAuthLoginDto(body io.Reader) (authLogin dtos.AuthL
 }
 
 func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
 	authLogin, errMessages, err := h.validateAuthLoginDto(r.Body)
 
 	if err != nil {
@@ -64,8 +62,6 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// serve JWT!
-
 	user, _ := h.UserModel.GetByEmail(authLogin.Email)
 
 	jwtToken, err := utils.CreateToken(user.ID.Hex())
@@ -76,6 +72,8 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	returnObjectResponse(w, http.StatusOK, jwtToken)
+	returnObjectResponse(w, http.StatusOK, dtos.JwtResponse{
+		AccessToken: jwtToken,
+	})
 
 }
