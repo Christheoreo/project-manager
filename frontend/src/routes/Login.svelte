@@ -1,6 +1,10 @@
 <script lang="ts">
 import { Container, Row, Col, Form, FormGroup, FormText, Input, Label, Button, Alert } from 'sveltestrap';
+import type { IStandardResponse } from '../dtos/IStandardResponse';
+import { AuthenticationService } from '../services/AuthenticationService';
 import { Validation } from '../utils/Validation';
+import Loader from './../components/Loader.svelte';
+const authenticationService = new AuthenticationService();
 
 let email: string = '';
 let password: string = '';
@@ -8,30 +12,57 @@ let password: string = '';
 let showErrorModal: boolean = false;
 let errorMessage: string = '';
 
+let showSpinner: boolean = false;
+let isLoggingIn: boolean = false;
+
 const validateUserInput: () => { error: boolean; message: string } = (): { error: boolean; message: string } => {
   let res: { error: boolean; message: string } = { error: true, message: 'NA' };
   if (!Validation.isEmailValid(email)) {
     res.message = 'Email is invalid.';
   } else if (!Validation.isPasswordValid(password)) {
     res.message = 'Password needs to be between 8 and 25 characters';
+  } else {
+    res.error = false;
   }
 
   return res;
 };
 
 /**
- * Carry on here. 
- * Add a loading spinner as well!
+ * Fix the cors Issue!
  */
 const login = async () => {
+  if (isLoggingIn) return;
+  isLoggingIn = true;
   showErrorModal = false;
+  showSpinner = false;
   let validationResponse = validateUserInput();
 
   if (validationResponse.error) {
     //
     errorMessage = validationResponse.message;
     showErrorModal = true;
+    isLoggingIn = false;
+    return;
   }
+  showSpinner = true;
+
+  try {
+    const loginResponse = await authenticationService.login(email, password);
+    window.localStorage.setItem('token', loginResponse.accessToken);
+  } catch (error) {
+    if (error.response) {
+      const loginError: IStandardResponse = error.response.data;
+      errorMessage = loginError.messages.join(' || ');
+    } else {
+      errorMessage = 'Unknown error :(';
+    }
+    showErrorModal = true;
+  } finally {
+    showSpinner = false;
+  }
+  //
+  isLoggingIn = false;
 };
 
 const handleEnterKey = async (e: KeyboardEvent) => {
@@ -73,6 +104,7 @@ const handleEnterKey = async (e: KeyboardEvent) => {
         <FormGroup>
           <Button color="dark" block="{true}" type="button" on:click="{login}">Login</Button>
         </FormGroup>
+        <Loader show="{showSpinner}" />
         <Alert color="warning" isOpen="{showErrorModal}" dismissible>{errorMessage}</Alert>
         <hr />
         <FormGroup>

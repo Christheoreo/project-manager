@@ -3,3 +3,7 @@
 
 .DS_Store
 /.pnpm-store/
+
+.env
+
+/src/Variables.ts
