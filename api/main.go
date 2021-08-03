@@ -59,10 +59,11 @@ func main() {
 
 	// Applying top level middleware
 	r.Use(middleware.HeadersMiddleware)
+	r.Use(middleware.CorsMiddleware)
 
 	// Unprotected routes
-	r.HandleFunc("/users/register", userHandler.RegisterHandler).Methods("POST")
-	r.HandleFunc("/auth/login", authHandler.LoginHandler).Methods("POST")
+	r.HandleFunc("/users/register", userHandler.RegisterHandler).Methods(http.MethodPost, http.MethodOptions)
+	r.HandleFunc("/auth/login", authHandler.LoginHandler).Methods(http.MethodPost, http.MethodOptions)
 
 	//pR = protectedRoutes
 	pR := r.PathPrefix("/").Subrouter()
@@ -71,7 +72,7 @@ func main() {
 	pR.Use(jwtMiddleware.Middleware)
 
 	// Define routes
-	pR.HandleFunc("/users/me", userHandler.GetRequester).Methods("GET")
+	pR.HandleFunc("/users/me", userHandler.GetRequester).Methods(http.MethodGet, http.MethodOptions)
 
 	port := fmt.Sprintf(":%s", os.Getenv("PORT"))
 	http.ListenAndServe(port, r)
