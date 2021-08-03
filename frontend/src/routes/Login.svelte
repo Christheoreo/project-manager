@@ -1,13 +1,16 @@
 <script lang="ts">
+import { navigate } from 'svelte-routing';
+
 import { Container, Row, Col, Form, FormGroup, FormText, Input, Label, Button, Alert } from 'sveltestrap';
 import type { IStandardResponse } from '../dtos/IStandardResponse';
 import { AuthenticationService } from '../services/AuthenticationService';
+import { IsLoggedInStore } from '../stores/IsLoggedInStore';
 import { Validation } from '../utils/Validation';
 import Loader from './../components/Loader.svelte';
 const authenticationService = new AuthenticationService();
 
-let email: string = '';
-let password: string = '';
+let email: string = 'chris.finlow@gmail.com';
+let password: string = '12345678';
 
 let showErrorModal: boolean = false;
 let errorMessage: string = '';
@@ -28,9 +31,6 @@ const validateUserInput: () => { error: boolean; message: string } = (): { error
   return res;
 };
 
-/**
- * Fix the cors Issue!
- */
 const login = async () => {
   if (isLoggingIn) return;
   isLoggingIn = true;
@@ -50,10 +50,16 @@ const login = async () => {
   try {
     const loginResponse = await authenticationService.login(email, password);
     window.localStorage.setItem('token', loginResponse.accessToken);
+    IsLoggedInStore.set(true);
+    navigate('/', { replace: true });
   } catch (error) {
     if (error.response) {
       const loginError: IStandardResponse = error.response.data;
-      errorMessage = loginError.messages.join(' || ');
+      if (loginError.messages.length == 1) {
+        errorMessage = `${loginError.messages[0]} :(`;
+      } else {
+        errorMessage = loginError.messages.join(' || ');
+      }
     } else {
       errorMessage = 'Unknown error :(';
     }
