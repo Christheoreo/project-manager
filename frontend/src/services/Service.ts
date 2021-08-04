@@ -1,7 +1,7 @@
 import { BASE_URL } from './../Variables';
 import type { AxiosInstance, AxiosResponse } from 'axios';
 import axios from 'axios';
-import { navigate } from 'svelte-routing';
+import router from 'page';
 
 export class Service {
   protected instance: AxiosInstance;
@@ -43,7 +43,7 @@ export class Service {
           if (response.status === 401) {
             console.log('Redirecting!');
 
-            navigate('/login', { replace: true });
+            router.replace('/login');
           }
         }
         // Do something with request error

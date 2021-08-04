@@ -12,11 +12,9 @@ import {
   DropdownMenu,
   DropdownItem,
 } from 'sveltestrap';
-import { navigate, link } from 'svelte-routing';
 import { onMount } from 'svelte';
 import { UsersService } from '../services/UsersService';
 const usersService = new UsersService();
-const login = () => navigate('/login', { replace: true });
 let isOpen = false;
 export let name: string = 'Options';
 
@@ -34,7 +32,6 @@ const getUserInfo = async () => {
 };
 
 onMount(async () => {
-  console.log('here');
   await getUserInfo();
 });
 </script>
@@ -53,7 +50,7 @@ onMount(async () => {
       <Dropdown nav inNavbar>
         <DropdownToggle nav caret>{name}</DropdownToggle>
         <DropdownMenu end>
-          <DropdownItem><a href="/logout" use:link>Logout</a></DropdownItem>
+          <DropdownItem href="/logout">Logout</DropdownItem>
         </DropdownMenu>
       </Dropdown>
     </Nav>

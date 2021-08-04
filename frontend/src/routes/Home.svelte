@@ -1,7 +1,7 @@
 <script lang="ts">
-import { navigate } from 'svelte-routing';
+import router from 'page';
 import Skeleton from './Skeleton.svelte';
-const login = () => navigate('/login', { replace: true });
+const login = () => router.replace('/login');
 </script>
 
 <svelte:head>
@@ -9,7 +9,7 @@ const login = () => navigate('/login', { replace: true });
 </svelte:head>
 
 <!-- <Skeleton> -->
-  <h1>Home</h1>
+<h1>Home</h1>
 
-  <button type="button" on:click="{login}">Login</button>
+<button type="button" on:click="{login}">Login</button>
 <!-- </Skeleton> -->

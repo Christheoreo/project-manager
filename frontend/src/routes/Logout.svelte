@@ -7,6 +7,20 @@
 }
 </style>
 
+<script lang="ts">
+import { onMount } from 'svelte';
+import router from 'page';
+import { IsLoggedInStore } from '../stores/IsLoggedInStore';
+
+onMount(() => {
+  setTimeout(() => {
+    window.localStorage.clear();
+    IsLoggedInStore.set(false);
+    router.replace('/login');
+  }, 1000);
+});
+</script>
+
 <div class="jumbotron">
   <h1 class="display-4">Logging out</h1>
   <p class="lead">

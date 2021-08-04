@@ -1,5 +1,5 @@
 <script lang="ts">
-import { navigate } from 'svelte-routing';
+import router from 'page';
 
 import { Container, Row, Col, Form, FormGroup, FormText, Input, Label, Button, Alert } from 'sveltestrap';
 import type { IStandardResponse } from '../dtos/IStandardResponse';
@@ -51,7 +51,7 @@ const login = async () => {
     const loginResponse = await authenticationService.login(email, password);
     window.localStorage.setItem('token', loginResponse.accessToken);
     IsLoggedInStore.set(true);
-    navigate('/', { replace: true });
+    router.replace('/');
   } catch (error) {
     if (error.response) {
       const loginError: IStandardResponse = error.response.data;
