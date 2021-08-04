@@ -25,14 +25,14 @@ func (m *JWTMiddleware) Middleware(next http.Handler) http.Handler {
 		userId, err := utils.ParseToken(tokenString)
 
 		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusForbidden)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
 		user, err := m.UserModel.GetById(userId)
 
 		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusForbidden)
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 
