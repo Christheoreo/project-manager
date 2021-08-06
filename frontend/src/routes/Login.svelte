@@ -3,6 +3,7 @@ import router from 'page';
 
 import { Container, Row, Col, Form, FormGroup, FormText, Input, Label, Button, Alert } from 'sveltestrap';
 import type { IStandardResponse } from '../dtos/IStandardResponse';
+import type { IError } from '../interfaces/IError';
 import { AuthenticationService } from '../services/AuthenticationService';
 import { IsLoggedInStore } from '../stores/IsLoggedInStore';
 import { Validation } from '../utils/Validation';
@@ -18,8 +19,8 @@ let errorMessage: string = '';
 let showSpinner: boolean = false;
 let isLoggingIn: boolean = false;
 
-const validateUserInput: () => { error: boolean; message: string } = (): { error: boolean; message: string } => {
-  let res: { error: boolean; message: string } = { error: true, message: 'NA' };
+const validateUserInput: () => IError = (): IError => {
+  let res: IError = { error: true, message: 'NA' };
   if (!Validation.isEmailValid(email)) {
     res.message = 'Email is invalid.';
   } else if (!Validation.isPasswordValid(password)) {

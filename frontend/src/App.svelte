@@ -11,9 +11,6 @@ import Skeleton from './routes/Skeleton.svelte';
 import { IsLoggedInStore } from './stores/IsLoggedInStore';
 
 import router from 'page';
-export let url = '';
-
-let isLoggedInSubscriber: Unsubscriber;
 
 const routes: IRoute[] = [
   { path: '/login', component: Login, protected: false, redirectIfLoggedIn: true },
@@ -25,7 +22,6 @@ const routes: IRoute[] = [
 let page = Login;
 let params: object;
 let useSkeleton: boolean = false;
-
 
 router('/login', () => {
   useSkeleton = false;
@@ -40,7 +36,7 @@ router('/register', () => {
   }
 });
 router('/logout', () => {
-  useSkeleton = true;
+  useSkeleton = false;
   page = Logout;
 });
 router('/', () => {
@@ -50,30 +46,12 @@ router('/', () => {
 
 router.start();
 
-/**
- * @todo - if we can create a stotre for window.location.pathname and do a similar check to the below, that would be cool!
- * if we are logged in, and we navigate to login programatically, it doesnt check auth! but if we refresh the page it does.
- */
 onMount(() => {
   const hasToken = window.localStorage.getItem('token') != null;
   IsLoggedInStore.set(hasToken);
-  isLoggedInSubscriber = IsLoggedInStore.subscribe((isLoggedIn) => {
-    url = window.location.pathname;
-    const currentRoute = routes.find((r) => r.path == url);
-    if (!currentRoute) return;
-    if (currentRoute.protected && !isLoggedIn) {
-      console.log('got here!!!');
-      router.replace('/login');
-    }
-    if (isLoggedIn && currentRoute.redirectIfLoggedIn) {
-      router.redirect('/');
-    }
-  });
 });
 
-onDestroy(() => {
-  isLoggedInSubscriber();
-});
+onDestroy(() => {});
 </script>
 
 {#if useSkeleton}

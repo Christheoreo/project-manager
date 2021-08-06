@@ -17,7 +17,6 @@ import { UsersService } from '../services/UsersService';
 const usersService = new UsersService();
 let isOpen = false;
 export let name: string = 'Options';
-
 const handleUpdate = (event) => {
   isOpen = event.detail.isOpen;
 };
@@ -56,5 +55,4 @@ onMount(async () => {
     </Nav>
   </Collapse>
 </Navbar>
-
 <slot />

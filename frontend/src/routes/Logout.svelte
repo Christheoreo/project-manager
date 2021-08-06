@@ -13,9 +13,9 @@ import router from 'page';
 import { IsLoggedInStore } from '../stores/IsLoggedInStore';
 
 onMount(() => {
+  window.localStorage.clear();
+  IsLoggedInStore.set(false);
   setTimeout(() => {
-    window.localStorage.clear();
-    IsLoggedInStore.set(false);
     router.replace('/login');
   }, 1000);
 });
