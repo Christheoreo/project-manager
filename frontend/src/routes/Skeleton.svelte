@@ -36,7 +36,7 @@ onMount(async () => {
 </script>
 
 <Navbar color="light" light expand="md">
-  <NavbarBrand href="/">sveltestrap</NavbarBrand>
+  <NavbarBrand href="/">Project Manager</NavbarBrand>
   <NavbarToggler on:click="{() => (isOpen = !isOpen)}" />
   <Collapse isOpen="{isOpen}" navbar expand="md" on:update="{handleUpdate}">
     <Nav class="ms-auto" navbar>
