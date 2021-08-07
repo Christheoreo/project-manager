@@ -37,14 +37,14 @@ func main() {
 
 	// Set up collections
 	userCollection := client.Database("projects").Collection("users")
-	tagCollection := client.Database("projects").Collection("tags")
+	projectCollection := client.Database("projects").Collection("projects")
 
 	// Set up models
 	userModel := models.User{
 		Collection: userCollection,
 	}
-	tagModel := models.Tag{
-		Collection: tagCollection,
+	projectModel := models.Project{
+		Collection: projectCollection,
 	}
 
 	// Set up handlers
@@ -55,8 +55,8 @@ func main() {
 	authHandler := handlers.AuthHandler{
 		UserModel: userModel,
 	}
-	tagHandler := handlers.TagsHandler{
-		TagModel: tagModel,
+	projectHandler := handlers.ProjectsHandler{
+		ProjectModel: projectModel,
 	}
 
 	// Set up middleware
@@ -80,11 +80,8 @@ func main() {
 
 	// Define routes
 	pR.HandleFunc("/users/me", userHandler.GetRequester).Methods(http.MethodGet, http.MethodOptions)
-	/**
-		@todo this needs testing
-		carry on here in postman!
-	**/
-	pR.HandleFunc("/tags", tagHandler.RegisterHandler).Methods(http.MethodPost, http.MethodOptions)
+	pR.HandleFunc("/projects", projectHandler.RegisterHandler).Methods(http.MethodPost, http.MethodOptions)
+	pR.HandleFunc("/projects", projectHandler.GetMyProjects).Methods(http.MethodGet, http.MethodOptions)
 
 	port := fmt.Sprintf(":%s", os.Getenv("PORT"))
 	http.ListenAndServe(port, r)
