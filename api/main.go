@@ -25,27 +25,26 @@ func main() {
 	 * Then defer the closing.
 	 **/
 
-	client, err := database.EstablishClient()
+	pool, err := database.EstablishConnectionPool()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
 	}
 
 	fmt.Println("Connected!")
-	defer database.EndClient(client)
+	defer database.CloseConnectionPool(pool)
 
 	r := mux.NewRouter()
 
 	// Set up collections
-	userCollection := client.Database("projects").Collection("users")
-	projectCollection := client.Database("projects").Collection("projects")
 
 	// Set up models
 	userModel := models.User{
-		Collection: userCollection,
+		Pool: pool,
 	}
-	projectModel := models.Project{
-		Collection: projectCollection,
-	}
+	// projectModel := models.Project{
+	// 	Collection: projectCollection,
+	// }
 
 	// Set up handlers
 	userHandler := handlers.UserHandler{
@@ -55,9 +54,9 @@ func main() {
 	authHandler := handlers.AuthHandler{
 		UserModel: userModel,
 	}
-	projectHandler := handlers.ProjectsHandler{
-		ProjectModel: projectModel,
-	}
+	// projectHandler := handlers.ProjectsHandler{
+	// 	ProjectModel: projectModel,
+	// }
 
 	// Set up middleware
 	jwtMiddleware := middleware.JWTMiddleware{
@@ -80,8 +79,8 @@ func main() {
 
 	// Define routes
 	pR.HandleFunc("/users/me", userHandler.GetRequester).Methods(http.MethodGet, http.MethodOptions)
-	pR.HandleFunc("/projects", projectHandler.RegisterHandler).Methods(http.MethodPost, http.MethodOptions)
-	pR.HandleFunc("/projects", projectHandler.GetMyProjects).Methods(http.MethodGet, http.MethodOptions)
+	// pR.HandleFunc("/projects", projectHandler.RegisterHandler).Methods(http.MethodPost, http.MethodOptions)
+	// pR.HandleFunc("/projects", projectHandler.GetMyProjects).Methods(http.MethodGet, http.MethodOptions)
 
 	port := fmt.Sprintf(":%s", os.Getenv("PORT"))
 	http.ListenAndServe(port, r)

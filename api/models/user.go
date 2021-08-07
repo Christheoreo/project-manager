@@ -1,81 +1,56 @@
 package models
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/Christheoreo/project-manager/dtos"
 	"github.com/Christheoreo/project-manager/utils"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 type User struct {
-	Collection *mongo.Collection
-}
-
-type UserToInsert struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty"`
-	FirstName string             `bson:"firstName,omitempty" json:"firstName"`
-	LastName  string             `bson:"lastName,omitempty" json:"lastName"`
-	Email     string             `bson:"email,omitempty" json:"email"`
-	Password  string             `bson:"password,omitempty" json:"password"`
+	Pool *pgxpool.Pool
 }
 
 func (u *User) HasEmailBeenTaken(email string) (bool, error) {
-	count, err := u.Collection.CountDocuments(getContext(), bson.M{"email": email})
-
-	if err != nil {
-		return false, err
-	}
+	var count int
+	err := u.Pool.QueryRow(context.Background(), "SELECT COUNT(*) as \"count\" from \"users\" where \"email\" = $1", email).Scan(&count)
 	return count > 0, err
 
 }
 
-func (u *User) Insert(user dtos.NewUserDto) (id primitive.ObjectID, err error) {
-
+func (u *User) Insert(user dtos.NewUserDto) (id int, err error) {
 	passwordHash, err := utils.HashPassword(user.Password)
 	if err != nil {
 		return
 	}
-
-	userToInsert := UserToInsert{
-		ID:        primitive.NewObjectID(),
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
-		Password:  passwordHash, // needs encrypting
-	}
-	res, err := u.Collection.InsertOne(getContext(), userToInsert)
-
-	if err != nil {
-		return
-	}
-
-	id = res.InsertedID.(primitive.ObjectID)
+	query := "INSERT INTO users (\"first_name\", \"last_name\", \"email\", \"password\") VALUES ($1,$2,$3,$4) RETURNING id"
+	err = u.Pool.QueryRow(context.Background(), query, user.FirstName, user.LastName, user.Email, passwordHash).Scan(&id)
 	return
 }
 
-func (u *User) GetById(userId primitive.ObjectID) (user dtos.UserDto, err error) {
-	err = u.Collection.FindOne(getContext(), bson.M{"_id": userId}).Decode(&user)
+func (u *User) GetById(id int) (user dtos.UserDto, err error) {
+	fmt.Printf("HELLO CHRIS ID = %d\n\n\n", id)
+	query := "SELECT \"id\", \"first_name\", \"last_name\", \"email\" from \"users\" where \"id\" = $1"
+	err = u.Pool.QueryRow(context.Background(), query, id).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email)
 	return
 }
 
 func (u *User) GetByEmail(email string) (user dtos.UserDto, err error) {
-	err = u.Collection.FindOne(getContext(), bson.M{"email": email}).Decode(&user)
+	query := "SELECT \"id\", \"first_name\", \"last_name\", \"email\" from \"users\" where \"email\" = $1"
+	err = u.Pool.QueryRow(context.Background(), query, email).Scan(&user)
 	return
 }
 
 func (u *User) ValidateUserCredentials(authLogin dtos.AuthLoginDto) (valid bool, err error) {
 
-	var fullUser UserToInsert
-	err = u.Collection.FindOne(getContext(), bson.M{"email": authLogin.Email}).Decode(&fullUser)
-
+	var passwordHash string
+	query := "SELECT \"password\" from \"users\" where \"email\" = $1"
+	err = u.Pool.QueryRow(context.Background(), query, authLogin.Password).Scan(&passwordHash)
 	if err != nil {
 		return
 	}
-	valid = utils.CheckPasswordHash(authLogin.Password, fullUser.Password)
+	valid = utils.CheckPasswordHash(authLogin.Password, passwordHash)
 	return
-}
-
-func (u *User) GetIDAsString(userId primitive.ObjectID) string {
-	return userId.Hex()
 }

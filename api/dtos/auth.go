@@ -2,8 +2,8 @@ package dtos
 
 type (
 	AuthLoginDto struct {
-		Email    string `bson:"email,omitempty" json:"email"`
-		Password string `bson:"password,omitempty" json:"password"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
 
 	JwtResponse struct {

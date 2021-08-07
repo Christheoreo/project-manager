@@ -99,6 +99,7 @@ func (h *UserHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	user, err := h.UserModel.GetById(insertedId)
 
 	if err != nil {
+		fmt.Println(err)
 		returnStandardResponse(w, http.StatusInternalServerError, []string{"Unable to fetch created user."})
 		return
 	}

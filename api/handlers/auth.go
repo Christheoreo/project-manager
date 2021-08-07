@@ -64,7 +64,7 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	user, _ := h.UserModel.GetByEmail(authLogin.Email)
 
-	jwtToken, err := utils.CreateToken(user.ID.Hex())
+	jwtToken, err := utils.CreateToken(user.ID)
 
 	if err != nil {
 		fmt.Println(err.Error())

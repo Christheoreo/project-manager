@@ -3,10 +3,10 @@ package utils
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var signingKey []byte
@@ -16,19 +16,19 @@ func init() {
 	signingKey = []byte(jwtKey)
 }
 
-func CreateToken(userIdAsString string) (string, error) {
+func CreateToken(userId int) (string, error) {
 
 	token := jwt.New(jwt.SigningMethodHS256)
 	token.Claims =
 		&jwt.StandardClaims{
-			Subject:   userIdAsString,
+			Subject:   strconv.Itoa(userId),
 			ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),
 		}
 
 	return token.SignedString(signingKey)
 }
 
-func ParseToken(tokenString string) (userId primitive.ObjectID, err error) {
+func ParseToken(tokenString string) (userId int, err error) {
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
@@ -44,8 +44,7 @@ func ParseToken(tokenString string) (userId primitive.ObjectID, err error) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		userIdString := claims["sub"].(string)
-		userId, err = primitive.ObjectIDFromHex(userIdString)
+		userId, err = strconv.Atoi(userIdString)
 	}
-
 	return
 }

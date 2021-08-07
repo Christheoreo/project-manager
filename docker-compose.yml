@@ -12,45 +12,40 @@ services:
             - 8081:80
         volumes:
             - ./api:/usr/src/app/api
-    project-manager-frontend:
-        build:
-            context: ./frontend
-            dockerfile: Dockerfile
-        container_name: project-manager-frontend
-        restart: always
-        depends_on:
-            - project-manager-api
-        ports:
-            - 80:5000
-        volumes:
-            - ./frontend:/usr/src/app/frontend
-            - /usr/src/app/frontend/node_modules
-        environment:
-            - CHOKIDAR_USEPOLLING=true
-            - HOST=0.0.0.0
+    # project-manager-frontend:
+    #     build:
+    #         context: ./frontend
+    #         dockerfile: Dockerfile
+    #     container_name: project-manager-frontend
+    #     restart: always
+    #     depends_on:
+    #         - project-manager-api
+    #     ports:
+    #         - 80:5000
+    #     volumes:
+    #         - ./frontend:/usr/src/app/frontend
+    #         - /usr/src/app/frontend/node_modules
+    #     environment:
+    #         - CHOKIDAR_USEPOLLING=true
+    #         - HOST=0.0.0.0
     project-manager-db:
-        image: mongo:latest
+        image: postgres
         container_name: project-manager-db
         environment:
-            MONGO_INITDB_ROOT_USERNAME: root
-            MONGO_INITDB_ROOT_PASSWORD: rootpassword
-            MONGO_INITDB_DATABASE: projects
+            POSTGRES_PASSWORD: rootpassword
+            POSTGRES_DB: projects
         ports:
-            - 27017:27017
+            - 5432:5432
         restart: always
         volumes:
-            - todo_app_data_container:/data/db
-    project-manager-mongo-express:
-        image: mongo-express:latest
-        container_name: project-manager-mongo-express
-        environment:
-            ME_CONFIG_MONGODB_SERVER: "project-manager-db"
-            ME_CONFIG_MONGODB_ADMINUSERNAME: root
-            ME_CONFIG_MONGODB_ADMINPASSWORD: rootpassword
+            - project_manager_db_data_container:/data/db
+    project-manager-admin:
+        image: adminer
+        container_name: project-manager-admin
+        restart: always
+        ports:
+            - 8082:8080
         depends_on:
             - project-manager-db
-        ports:
-            - 8082:8081
-        restart: always
 volumes:
-  todo_app_data_container:
+  project_manager_db_data_container:
