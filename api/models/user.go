@@ -39,7 +39,7 @@ func (u *User) GetById(id int) (user dtos.UserDto, err error) {
 
 func (u *User) GetByEmail(email string) (user dtos.UserDto, err error) {
 	query := "SELECT \"id\", \"first_name\", \"last_name\", \"email\" from \"users\" where \"email\" = $1"
-	err = u.Pool.QueryRow(context.Background(), query, email).Scan(&user)
+	err = u.Pool.QueryRow(context.Background(), query, email).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email)
 	return
 }
 
@@ -47,7 +47,7 @@ func (u *User) ValidateUserCredentials(authLogin dtos.AuthLoginDto) (valid bool,
 
 	var passwordHash string
 	query := "SELECT \"password\" from \"users\" where \"email\" = $1"
-	err = u.Pool.QueryRow(context.Background(), query, authLogin.Password).Scan(&passwordHash)
+	err = u.Pool.QueryRow(context.Background(), query, authLogin.Email).Scan(&passwordHash)
 	if err != nil {
 		return
 	}
