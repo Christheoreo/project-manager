@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/Christheoreo/project-manager/dtos"
@@ -32,12 +31,14 @@ type (
 	}
 )
 
-// @todo add priority rating
+// @todo add tags
 func (p *Project) GetById(tagId int) (project dtos.ProjectDto, err error) {
 	query := "SELECT p.id, p.title, p.description, pr.name FROM projects p inner join priorities pr on pr.id = p.priority_id where p.id = $1"
-	err = p.Pool.QueryRow(context.Background(), query, tagId).Scan(&project.ID, &project.Title, &project.Description)
+	err = p.Pool.QueryRow(context.Background(), query, tagId).Scan(&project.ID, &project.Title, &project.Description, &project.Priority)
 	return
 }
+
+// @todo add tags
 func (p *Project) GetByUser(user dtos.UserDto) (projects []dtos.ProjectDto, err error) {
 	query := "SELECT p.id, p.title, p.description, pr.name FROM projects p inner join priorities pr on pr.id = p.priority_id where p.user_id = $1"
 	rows, err := p.Pool.Query(context.Background(), query, user.ID)
@@ -49,7 +50,7 @@ func (p *Project) GetByUser(user dtos.UserDto) (projects []dtos.ProjectDto, err 
 
 	for rows.Next() {
 		var project dtos.ProjectDto
-		err = rows.Scan(&project.ID, &project.Title, &project.Description)
+		err = rows.Scan(&project.ID, &project.Title, &project.Description, &project.Priority)
 		if err != nil {
 			return
 		}
@@ -75,7 +76,7 @@ func (p *Project) Insert(project dtos.NewProjectDto, user dtos.UserDto) (id int,
 
 	sb.WriteString("INSERT INTO \"projects\" (\"user_id\", \"title\", \"description\", \"priority_id\")")
 	sb.WriteString(" VALUES ")
-	sb.WriteString("($1,$2) RETURNING id")
+	sb.WriteString("($1,$2,$3,$4) RETURNING id")
 	//
 	query := sb.String()
 	err = p.Pool.QueryRow(context.Background(), query, user.ID, project.Title, project.Description, project.PriorityID).Scan(&id)
@@ -84,29 +85,11 @@ func (p *Project) Insert(project dtos.NewProjectDto, user dtos.UserDto) (id int,
 		return
 	}
 
-	var sbTwo strings.Builder
-
-	sbTwo.WriteString("INSERT INTO \"project_tags\" (\"project_id\", \"tag_id\")")
-	sbTwo.WriteString("VALUES")
-	values := make([]interface{}, 0)
-
-	for i := 0; i < len(project.TagIDs); i++ {
-		var sb strings.Builder
-
-		dollarVar := i + 1
-
-		sb.WriteString(fmt.Sprintf("($%d,$%d)", dollarVar, dollarVar))
-		if i == len(project.TagIDs)-1 {
-			sb.WriteString(";")
-		} else {
-			sb.WriteString(",")
-		}
-		sbTwo.WriteString(sb.String())
-		values = append(values, id, project.TagIDs[i])
+	for _, tagID := range project.TagIDs {
+		var tempID int
+		q := "INSERT INTO \"project_tags\" (\"project_id\", \"tag_id\") VALUES ($1, $2) RETURNING id"
+		err = p.Pool.QueryRow(context.Background(), q, id, tagID).Scan(&tempID)
 	}
 
-	query = sb.String()
-	err = p.Pool.QueryRow(context.Background(), query, values...).Scan(&id)
-	// insert the tag
 	return
 }

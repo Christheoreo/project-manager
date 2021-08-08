@@ -50,6 +50,10 @@ func main() {
 		Pool: pool,
 	}
 
+	prioritiesModel := models.Priority{
+		Pool: pool,
+	}
+
 	// Set up handlers
 	userHandler := handlers.UserHandler{
 		UserModel: userModel,
@@ -63,8 +67,9 @@ func main() {
 		TagModel: tagsModel,
 	}
 	projectsHandler := handlers.ProjectsHandler{
-		ProjectModel: projectModel,
-		TagModel:     tagsModel,
+		ProjectModel:  projectModel,
+		TagModel:      tagsModel,
+		PriorityModel: prioritiesModel,
 	}
 
 	// Set up middleware

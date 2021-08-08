@@ -18,7 +18,7 @@ type (
 		Title       string                   `json:"title"`
 		Description string                   `json:"description"`
 		TagIDs      []int                    `json:"tagIds"`
-		PriorityID  int                      `json:"priority"`
+		PriorityID  int                      `json:"priorityId"`
 		Components  []NewProjectComponentDto `json:"components"`
 	}
 
