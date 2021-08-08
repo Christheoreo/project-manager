@@ -57,3 +57,13 @@ func (t *Tag) DoesTagExistForUser(name string, userID int) (exists bool, err err
 	}
 	return
 }
+
+func (t *Tag) DoesTagExistForUserByID(ID int, userID int) (exists bool, err error) {
+	var count int
+	query := "SELECT COUNT(*) as \"count\" from \"tags\" where \"id\" = $1 AND \"user_id\" = $2"
+	err = t.Pool.QueryRow(context.Background(), query, ID, userID).Scan(&count)
+	if err == nil {
+		exists = count > 0
+	}
+	return
+}

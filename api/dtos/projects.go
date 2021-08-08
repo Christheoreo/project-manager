@@ -17,8 +17,8 @@ type (
 	NewProjectDto struct {
 		Title       string                   `json:"title"`
 		Description string                   `json:"description"`
-		Tags        []string                 `json:"tags"`
-		Priority    string                   `json:"priority"`
+		TagIDs      []int                    `json:"tagIds"`
+		PriorityID  int                      `json:"priority"`
 		Components  []NewProjectComponentDto `json:"components"`
 	}
 

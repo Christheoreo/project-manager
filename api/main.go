@@ -46,9 +46,9 @@ func main() {
 	tagsModel := models.Tag{
 		Pool: pool,
 	}
-	// projectModel := models.Project{
-	// 	Collection: projectCollection,
-	// }
+	projectModel := models.Project{
+		Pool: pool,
+	}
 
 	// Set up handlers
 	userHandler := handlers.UserHandler{
@@ -62,9 +62,10 @@ func main() {
 	tagsHandler := handlers.TagsHandler{
 		TagModel: tagsModel,
 	}
-	// projectHandler := handlers.ProjectsHandler{
-	// 	ProjectModel: projectModel,
-	// }
+	projectsHandler := handlers.ProjectsHandler{
+		ProjectModel: projectModel,
+		TagModel:     tagsModel,
+	}
 
 	// Set up middleware
 	jwtMiddleware := middleware.JWTMiddleware{
@@ -89,8 +90,8 @@ func main() {
 	pR.HandleFunc("/users/me", userHandler.GetRequester).Methods(http.MethodGet, http.MethodOptions)
 	pR.HandleFunc("/tags", tagsHandler.RegisterHandler).Methods(http.MethodPost, http.MethodOptions)
 	pR.HandleFunc("/tags", tagsHandler.GetAllForRequester).Methods(http.MethodGet, http.MethodOptions)
-	// pR.HandleFunc("/projects", projectHandler.RegisterHandler).Methods(http.MethodPost, http.MethodOptions)
-	// pR.HandleFunc("/projects", projectHandler.GetMyProjects).Methods(http.MethodGet, http.MethodOptions)
+	pR.HandleFunc("/projects", projectsHandler.CreateProjectHandler).Methods(http.MethodPost, http.MethodOptions)
+	pR.HandleFunc("/projects", projectsHandler.GetMyProjects).Methods(http.MethodGet, http.MethodOptions)
 
 	port := fmt.Sprintf(":%s", os.Getenv("PORT"))
 	http.ListenAndServe(port, r)

@@ -1,111 +1,112 @@
 package models
 
-// import (
-// 	"fmt"
+import (
+	"context"
+	"fmt"
+	"strings"
 
-// 	"github.com/Christheoreo/project-manager/dtos"
-// 	"github.com/jackc/pgx"
-// 	"go.mongodb.org/mongo-driver/bson"
-// 	"go.mongodb.org/mongo-driver/bson/primitive"
-// )
+	"github.com/Christheoreo/project-manager/dtos"
+	"github.com/jackc/pgx/v4/pgxpool"
+)
 
-// type (
-// 	Project struct {
-// 		Conn *pgx.Conn
-// 	}
+type (
+	Project struct {
+		Pool *pgxpool.Pool
+	}
 
-// 	ProjectComponentToInsert struct {
-// 		ID          primitive.ObjectID `bson:"_id,omitempty"`
-// 		Title       string             `bson:"title,omitempty" json:"title"`
-// 		Description string             `bson:"description,omitempty" json:"description"`
-// 		Data        interface{}        `bson:"data,omitempty" json:"data"`
-// 	}
+	ProjectComponentToInsert struct {
+		ID          int
+		Title       string      `json:"title"`
+		Description string      `json:"description"`
+		Data        interface{} `json:"data"`
+	}
 
-// 	ProjectToInsert struct {
-// 		ID          primitive.ObjectID         `bson:"_id,omitempty"`
-// 		UserID      primitive.ObjectID         `bson:"userId,omitempty" json:"userId"`
-// 		Title       string                     `bson:"title,omitempty" json:"title"`
-// 		Description string                     `bson:"description,omitempty" json:"description"`
-// 		Tags        []string                   `bson:"tags,omitempty" json:"tags"`
-// 		Priority    string                     `bson:"priority,omitempty" json:"priority"`
-// 		Components  []ProjectComponentToInsert `bson:"components,omitempty" json:"components"`
-// 	}
-// )
+	ProjectToInsert struct {
+		ID          int
+		UserID      int                        `json:"userId"`
+		Title       string                     `json:"title"`
+		Description string                     `json:"description"`
+		Tags        []string                   `json:"tags"`
+		Priority    string                     `json:"priority"`
+		Components  []ProjectComponentToInsert `json:"components"`
+	}
+)
 
-// func (p *Project) GetById(tagId primitive.ObjectID) (project dtos.ProjectDto, err error) {
-// 	err = p.Collection.FindOne(getContext(), bson.M{"_id": tagId}).Decode(&project)
-// 	return
-// }
-// func (p *Project) GetByUser(user dtos.UserDto) (projects []dtos.ProjectDto, err error) {
-// 	cursor, err := p.Collection.Find(getContext(), bson.M{"userId": user.ID})
+// @todo add priority rating
+func (p *Project) GetById(tagId int) (project dtos.ProjectDto, err error) {
+	query := "SELECT p.id, p.title, p.description, pr.name FROM projects p inner join priorities pr on pr.id = p.priority_id where p.id = $1"
+	err = p.Pool.QueryRow(context.Background(), query, tagId).Scan(&project.ID, &project.Title, &project.Description)
+	return
+}
+func (p *Project) GetByUser(user dtos.UserDto) (projects []dtos.ProjectDto, err error) {
+	query := "SELECT p.id, p.title, p.description, pr.name FROM projects p inner join priorities pr on pr.id = p.priority_id where p.user_id = $1"
+	rows, err := p.Pool.Query(context.Background(), query, user.ID)
+	if err != nil {
+		return
+	}
 
-// 	ctx := getContext()
-// 	if err != nil {
-// 		return
-// 	}
-// 	defer cursor.Close(ctx)
+	projects = make([]dtos.ProjectDto, 0)
 
-// 	err = cursor.All(ctx, &projects)
+	for rows.Next() {
+		var project dtos.ProjectDto
+		err = rows.Scan(&project.ID, &project.Title, &project.Description)
+		if err != nil {
+			return
+		}
+		projects = append(projects, project)
+	}
+	return
+}
 
-// 	if err != nil {
-// 		return
-// 	}
+func (p *Project) HasProjectBeenTakenByUser(title string, userID int) (exists bool, err error) {
+	var count int
+	query := "SELECT COUNT(*) FROM \"projects\" where \"title\" = $1 AND \"user_id\" = $2"
+	err = p.Pool.QueryRow(context.Background(), query, title, userID).Scan(&count)
+	if err != nil {
+		return
+	}
 
-// 	for i := 0; i < len(projects); i++ {
-// 		var project dtos.ProjectDto = projects[i]
+	exists = count > 0
+	return
+}
 
-// 		components := project.Components
+func (p *Project) Insert(project dtos.NewProjectDto, user dtos.UserDto) (id int, err error) {
+	var sb strings.Builder
 
-// 		newComponents := make([]dtos.ProjectComponentDto, len(project.Components))
+	sb.WriteString("INSERT INTO \"projects\" (\"user_id\", \"title\", \"description\", \"priority_id\")")
+	sb.WriteString(" VALUES ")
+	sb.WriteString("($1,$2) RETURNING id")
+	//
+	query := sb.String()
+	err = p.Pool.QueryRow(context.Background(), query, user.ID, project.Title, project.Description, project.PriorityID).Scan(&id)
 
-// 		for _, component := range components {
-// 			newComponents[i] = dtos.ProjectComponentDto{
-// 				ID:          component.ID,
-// 				Title:       component.Title,
-// 				Description: component.Description,
-// 				Data:        "null",
-// 			}
+	if err != nil {
+		return
+	}
 
-// 		}
-// 	}
-// 	return
-// }
+	var sbTwo strings.Builder
 
-// func (p *Project) HasProjectBeenTakenByUser(title string, userId primitive.ObjectID) (bool, error) {
-// 	count, err := p.Collection.CountDocuments(getContext(), bson.M{"title": title, "userId": userId})
+	sbTwo.WriteString("INSERT INTO \"project_tags\" (\"project_id\", \"tag_id\")")
+	sbTwo.WriteString("VALUES")
+	values := make([]interface{}, 0)
 
-// 	if err != nil {
-// 		return false, err
-// 	}
-// 	return count > 0, err
+	for i := 0; i < len(project.TagIDs); i++ {
+		var sb strings.Builder
 
-// }
+		dollarVar := i + 1
 
-// func (p *Project) Insert(project dtos.NewProjectDto, user dtos.UserDto) (id primitive.ObjectID, err error) {
-// 	projectToInsert := &ProjectToInsert{
-// 		ID:          primitive.NewObjectID(),
-// 		UserID:      user.ID,
-// 		Title:       project.Title,
-// 		Description: project.Description,
-// 		Tags:        project.Tags,
-// 		Priority:    project.Priority,
-// 		Components:  []ProjectComponentToInsert{},
-// 	}
-// 	// Need to add the ids to the component.
-// 	for _, component := range project.Components {
-// 		projectToInsert.Components = append(projectToInsert.Components, ProjectComponentToInsert{
-// 			ID:          primitive.NewObjectID(),
-// 			Title:       component.Title,
-// 			Description: component.Description,
-// 			Data:        component.Data,
-// 		})
-// 	}
-// 	res, err := p.Collection.InsertOne(getContext(), projectToInsert)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 		return
-// 	}
+		sb.WriteString(fmt.Sprintf("($%d,$%d)", dollarVar, dollarVar))
+		if i == len(project.TagIDs)-1 {
+			sb.WriteString(";")
+		} else {
+			sb.WriteString(",")
+		}
+		sbTwo.WriteString(sb.String())
+		values = append(values, id, project.TagIDs[i])
+	}
 
-// 	id = res.InsertedID.(primitive.ObjectID)
-// 	return
-// }
+	query = sb.String()
+	err = p.Pool.QueryRow(context.Background(), query, values...).Scan(&id)
+	// insert the tag
+	return
+}

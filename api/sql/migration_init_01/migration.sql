@@ -1,4 +1,5 @@
 DROP TABLE components;
+DROP TABLE project_tags;
 DROP TABLE projects;
 DROP TABLE priorities;
 DROP TABLE tags;
@@ -29,7 +30,13 @@ create TABLE projects (
     "user_id" BIGSERIAL NOT NULL references users(id),
     title VARCHAR(255) NOT NULL,
     "description" VARCHAR(255) NOT NULL,
-    "priority"   BIGSERIAL NOT NULL references priorities(id)
+    "priority_id"   BIGSERIAL NOT NULL references priorities(id)
+);
+
+create TABLE project_tags (
+    id BIGSERIAL PRIMARY KEY,
+    project_id BIGSERIAL NOT NULL references projects(id),
+    tag_id BIGSERIAL NOT NULL references tags(id)
 );
 
 create TABLE components (
