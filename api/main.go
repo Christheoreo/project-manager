@@ -42,6 +42,10 @@ func main() {
 	userModel := models.User{
 		Pool: pool,
 	}
+
+	tagsModel := models.Tag{
+		Pool: pool,
+	}
 	// projectModel := models.Project{
 	// 	Collection: projectCollection,
 	// }
@@ -53,6 +57,10 @@ func main() {
 
 	authHandler := handlers.AuthHandler{
 		UserModel: userModel,
+	}
+
+	tagsHandler := handlers.TagsHandler{
+		TagModel: tagsModel,
 	}
 	// projectHandler := handlers.ProjectsHandler{
 	// 	ProjectModel: projectModel,
@@ -79,6 +87,8 @@ func main() {
 
 	// Define routes
 	pR.HandleFunc("/users/me", userHandler.GetRequester).Methods(http.MethodGet, http.MethodOptions)
+	pR.HandleFunc("/tags", tagsHandler.RegisterHandler).Methods(http.MethodPost, http.MethodOptions)
+	pR.HandleFunc("/tags", tagsHandler.GetAllForRequester).Methods(http.MethodGet, http.MethodOptions)
 	// pR.HandleFunc("/projects", projectHandler.RegisterHandler).Methods(http.MethodPost, http.MethodOptions)
 	// pR.HandleFunc("/projects", projectHandler.GetMyProjects).Methods(http.MethodGet, http.MethodOptions)
 
