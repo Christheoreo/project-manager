@@ -31,14 +31,34 @@ type (
 	}
 )
 
-// @todo add tags
 func (p *Project) GetById(tagId int) (project dtos.ProjectDto, err error) {
 	query := "SELECT p.id, p.title, p.description, pr.name FROM projects p inner join priorities pr on pr.id = p.priority_id where p.id = $1"
 	err = p.Pool.QueryRow(context.Background(), query, tagId).Scan(&project.ID, &project.Title, &project.Description, &project.Priority)
+	if err != nil {
+		return
+	}
+
+	// Get the tags for the project.
+	queryTags := "SELECT t.name FROM tags t inner join project_tags pt on pt.tag_id = t.id where pt.project_id = $1"
+	rowTags, errTags := p.Pool.Query(context.Background(), queryTags, project.ID)
+	if errTags != nil {
+		return
+	}
+
+	project.Tags = make([]string, 0)
+	for rowTags.Next() {
+		var tag string
+		errTags = rowTags.Scan(&tag)
+
+		if errTags != nil {
+			return
+		}
+
+		project.Tags = append(project.Tags, tag)
+	}
 	return
 }
 
-// @todo add tags
 func (p *Project) GetByUser(user dtos.UserDto) (projects []dtos.ProjectDto, err error) {
 	query := "SELECT p.id, p.title, p.description, pr.name FROM projects p inner join priorities pr on pr.id = p.priority_id where p.user_id = $1"
 	rows, err := p.Pool.Query(context.Background(), query, user.ID)
@@ -54,6 +74,26 @@ func (p *Project) GetByUser(user dtos.UserDto) (projects []dtos.ProjectDto, err 
 		if err != nil {
 			return
 		}
+
+		// Get the tags for the project.
+		queryTags := "SELECT t.name FROM tags t inner join project_tags pt on pt.tag_id = t.id where pt.project_id = $1"
+		rowTags, errTags := p.Pool.Query(context.Background(), queryTags, project.ID)
+		if errTags != nil {
+			return
+		}
+
+		project.Tags = make([]string, 0)
+		for rowTags.Next() {
+			var tag string
+			errTags = rowTags.Scan(&tag)
+
+			if errTags != nil {
+				return
+			}
+
+			project.Tags = append(project.Tags, tag)
+		}
+
 		projects = append(projects, project)
 	}
 	return
