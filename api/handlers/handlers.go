@@ -17,6 +17,15 @@ func returnStandardResponse(w http.ResponseWriter, status int, messages []string
 	json.NewEncoder(w).Encode(standardResponse)
 }
 
+func returnErrorResponse(w http.ResponseWriter, status int, err error) {
+	var standardResponse dtos.StandardResponseDto = dtos.StandardResponseDto{
+		Status:   status,
+		Messages: []string{err.Error()},
+	}
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(standardResponse)
+}
+
 func returnObjectResponse(w http.ResponseWriter, status int, object interface{}) {
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(object)

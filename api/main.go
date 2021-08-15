@@ -10,6 +10,8 @@ import (
 	"github.com/Christheoreo/project-manager/handlers"
 	"github.com/Christheoreo/project-manager/middleware"
 	"github.com/Christheoreo/project-manager/models"
+	"github.com/Christheoreo/project-manager/repositories"
+	"github.com/Christheoreo/project-manager/services"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 )
@@ -38,43 +40,54 @@ func main() {
 
 	// Set up collections
 
-	// Set up models
-	userModel := models.User{
+	usersRepository := repositories.UsersRepositoryPostgres{
+		Pool: pool,
+	}
+	prioritiesRepository := repositories.PrioritiesRepositoryPostgres{
 		Pool: pool,
 	}
 
-	tagsModel := models.Tag{
+	tagsRepository := repositories.TagsRepositoryPostgres{
 		Pool: pool,
 	}
+
+	usersService := services.UsersService{
+		UsersRepository: &usersRepository,
+	}
+
+	prioritiesService := services.PrioritiesService{
+		PrioritiesRepository: &prioritiesRepository,
+	}
+
+	tagsService := services.TagsService{
+		TagsRepository: &tagsRepository,
+	}
+
 	projectModel := models.Project{
-		Pool: pool,
-	}
-
-	prioritiesModel := models.Priority{
 		Pool: pool,
 	}
 
 	// Set up handlers
 	userHandler := handlers.UserHandler{
-		UserModel: userModel,
+		UsersService: &usersService,
 	}
 
 	authHandler := handlers.AuthHandler{
-		UserModel: userModel,
+		UsersService: usersService,
 	}
 
 	tagsHandler := handlers.TagsHandler{
-		TagModel: tagsModel,
+		TagsService: tagsService,
 	}
 	projectsHandler := handlers.ProjectsHandler{
-		ProjectModel:  projectModel,
-		TagModel:      tagsModel,
-		PriorityModel: prioritiesModel,
+		ProjectModel:      projectModel,
+		TagsService:       tagsService,
+		PrioritiesService: prioritiesService,
 	}
 
 	// Set up middleware
 	jwtMiddleware := middleware.JWTMiddleware{
-		UserModel: userModel,
+		UsersService: usersService,
 	}
 
 	// Applying top level middleware
@@ -93,7 +106,7 @@ func main() {
 
 	// Define routes
 	pR.HandleFunc("/users/me", userHandler.GetRequester).Methods(http.MethodGet, http.MethodOptions)
-	pR.HandleFunc("/tags", tagsHandler.RegisterHandler).Methods(http.MethodPost, http.MethodOptions)
+	pR.HandleFunc("/tags", tagsHandler.Create).Methods(http.MethodPost, http.MethodOptions)
 	pR.HandleFunc("/tags", tagsHandler.GetAllForRequester).Methods(http.MethodGet, http.MethodOptions)
 	pR.HandleFunc("/projects", projectsHandler.CreateProjectHandler).Methods(http.MethodPost, http.MethodOptions)
 	pR.HandleFunc("/projects", projectsHandler.GetMyProjects).Methods(http.MethodGet, http.MethodOptions)

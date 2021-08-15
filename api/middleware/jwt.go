@@ -5,12 +5,12 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Christheoreo/project-manager/models"
+	"github.com/Christheoreo/project-manager/interfaces"
 	"github.com/Christheoreo/project-manager/utils"
 )
 
 type JWTMiddleware struct {
-	UserModel models.User
+	UsersService interfaces.IUsersService
 }
 
 type ContextKey string
@@ -26,7 +26,7 @@ func (m *JWTMiddleware) Middleware(next http.Handler) http.Handler {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
-		user, err := m.UserModel.GetById(userId)
+		user, err := m.UsersService.Get(userId)
 		if err != nil {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
