@@ -14,8 +14,34 @@ type ProjectsService struct {
 	PrioritiesRepository interfaces.IPrioritiesRepository
 }
 
+type (
+	ProjectComponentToInsert struct {
+		ID          int
+		Title       string      `json:"title"`
+		Description string      `json:"description"`
+		Data        interface{} `json:"data"`
+	}
+
+	ProjectToInsert struct {
+		ID          int
+		UserID      int                        `json:"userId"`
+		Title       string                     `json:"title"`
+		Description string                     `json:"description"`
+		Tags        []string                   `json:"tags"`
+		Priority    string                     `json:"priority"`
+		Components  []ProjectComponentToInsert `json:"components"`
+	}
+)
+
 func (s *ProjectsService) Get(ID int) (dtos.ProjectDto, error) {
+	// @todo
+	// need to check if A) ID exists and B) User owns the project.
 	return s.ProjectsRepository.GetByID(ID)
+}
+
+func (s *ProjectsService) All(user dtos.UserDto) ([]dtos.ProjectDto, error) {
+	//
+	return s.ProjectsRepository.GetByUser(user)
 }
 func (s *ProjectsService) ValidateNewProjectDto(newProject dtos.NewProjectDto, user dtos.UserDto) ([]string, error) {
 

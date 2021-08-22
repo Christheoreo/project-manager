@@ -79,12 +79,34 @@ func (r *ProjectsRepositoryPostgres) GetByUser(user dtos.UserDto) ([]dtos.Projec
 	return projects, nil
 }
 
-/**
-@todo finish adding these.
-**/
 func (r *ProjectsRepositoryPostgres) TitleTaken(title string, userID int) (bool, error) {
-	return
+	var count int
+	query := `SELECT COUNT(*) FROM "projects" where "title" = $1 AND user_id = $2`
+	err := r.Pool.QueryRow(context.Background(), query, title, userID).Scan(&count)
+	if err != nil {
+		return true, err
+	}
+	return count > 0, nil
+
 }
 func (r *ProjectsRepositoryPostgres) Insert(project dtos.NewProjectDto, user dtos.UserDto) (int, error) {
-	return
+	var id int
+	query := `INSERT INTO "projects" (user_id, "title", "description", "priority_id") VALUES ($1,$2,$3,$4) RETURNING id`
+	err := r.Pool.QueryRow(context.Background(), query, user.ID, project.Title, project.Description, project.PriorityID).Scan(&id)
+
+	if err != nil {
+		return -1, err
+	}
+
+	for _, tagID := range project.TagIDs {
+		var tempID int
+		tagsQuery := `INSERT INTO "project_tags" ("project_id", "tag_id") VALUES ($1, $2) RETURNING id`
+		err = r.Pool.QueryRow(context.Background(), tagsQuery, id, tagID).Scan(&tempID)
+
+		if err != nil {
+			return -1, err
+		}
+	}
+
+	return id, nil
 }

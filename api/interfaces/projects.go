@@ -3,7 +3,7 @@ package interfaces
 import "github.com/Christheoreo/project-manager/dtos"
 
 type IProjectsRepository interface {
-	GetByID(ID int) (projects dtos.ProjectDto, err error)
+	GetByID(ID int) (project dtos.ProjectDto, err error)
 	GetByUser(user dtos.UserDto) (projects []dtos.ProjectDto, err error)
 	TitleTaken(title string, userID int) (isTaken bool, err error)
 	Insert(project dtos.NewProjectDto, user dtos.UserDto) (insertedID int, err error)

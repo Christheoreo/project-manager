@@ -9,7 +9,6 @@ import (
 	"github.com/Christheoreo/project-manager/database"
 	"github.com/Christheoreo/project-manager/handlers"
 	"github.com/Christheoreo/project-manager/middleware"
-	"github.com/Christheoreo/project-manager/models"
 	"github.com/Christheoreo/project-manager/repositories"
 	"github.com/Christheoreo/project-manager/services"
 	"github.com/gorilla/mux"
@@ -38,56 +37,55 @@ func main() {
 
 	r := mux.NewRouter()
 
-	// Set up collections
-
+	// Set up Repositories
 	usersRepository := repositories.UsersRepositoryPostgres{
 		Pool: pool,
 	}
 	prioritiesRepository := repositories.PrioritiesRepositoryPostgres{
 		Pool: pool,
 	}
-
 	tagsRepository := repositories.TagsRepositoryPostgres{
 		Pool: pool,
 	}
-
-	usersService := services.UsersService{
-		UsersRepository: &usersRepository,
-	}
-
-	prioritiesService := services.PrioritiesService{
-		PrioritiesRepository: &prioritiesRepository,
-	}
-
-	tagsService := services.TagsService{
-		TagsRepository: &tagsRepository,
-	}
-
-	projectModel := models.Project{
+	projectsRepository := repositories.ProjectsRepositoryPostgres{
 		Pool: pool,
 	}
 
+	// Set up the services
+	usersService := services.UsersService{
+		UsersRepository: &usersRepository,
+	}
+	prioritiesService := services.PrioritiesService{
+		PrioritiesRepository: &prioritiesRepository,
+	}
+	tagsService := services.TagsService{
+		TagsRepository: &tagsRepository,
+	}
+	projectsService := services.ProjectsService{
+		ProjectsRepository: &projectsRepository,
+	}
+
 	// Set up handlers
-	userHandler := handlers.UserHandler{
+	usersHandler := handlers.UserHandler{
 		UsersService: &usersService,
 	}
 
 	authHandler := handlers.AuthHandler{
-		UsersService: usersService,
+		UsersService: &usersService,
 	}
 
 	tagsHandler := handlers.TagsHandler{
-		TagsService: tagsService,
+		TagsService: &tagsService,
 	}
 	projectsHandler := handlers.ProjectsHandler{
-		ProjectModel:      projectModel,
-		TagsService:       tagsService,
-		PrioritiesService: prioritiesService,
+		ProjectsService:   &projectsService,
+		TagsService:       &tagsService,
+		PrioritiesService: &prioritiesService,
 	}
 
 	// Set up middleware
 	jwtMiddleware := middleware.JWTMiddleware{
-		UsersService: usersService,
+		UsersService: &usersService,
 	}
 
 	// Applying top level middleware
@@ -95,7 +93,7 @@ func main() {
 	r.Use(middleware.CorsMiddleware)
 
 	// Unprotected routes
-	r.HandleFunc("/users/register", userHandler.RegisterHandler).Methods(http.MethodPost, http.MethodOptions)
+	r.HandleFunc("/users/register", usersHandler.RegisterHandler).Methods(http.MethodPost, http.MethodOptions)
 	r.HandleFunc("/auth/login", authHandler.LoginHandler).Methods(http.MethodPost, http.MethodOptions)
 
 	//pR = protectedRoutes
@@ -105,7 +103,7 @@ func main() {
 	pR.Use(jwtMiddleware.Middleware)
 
 	// Define routes
-	pR.HandleFunc("/users/me", userHandler.GetRequester).Methods(http.MethodGet, http.MethodOptions)
+	pR.HandleFunc("/users/me", usersHandler.GetRequester).Methods(http.MethodGet, http.MethodOptions)
 	pR.HandleFunc("/tags", tagsHandler.Create).Methods(http.MethodPost, http.MethodOptions)
 	pR.HandleFunc("/tags", tagsHandler.GetAllForRequester).Methods(http.MethodGet, http.MethodOptions)
 	pR.HandleFunc("/projects", projectsHandler.CreateProjectHandler).Methods(http.MethodPost, http.MethodOptions)

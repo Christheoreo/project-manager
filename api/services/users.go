@@ -78,7 +78,7 @@ func (s *UsersService) ValidateAuthDto(authLogin dtos.AuthLoginDto) (errorMessag
 	return
 }
 
-func (s *UsersService) hasEmail(email string) (exists bool) {
+func (s *UsersService) HasEmail(email string) (exists bool) {
 	_, err := s.UsersRepository.GetByEmail(email)
 	return err == nil
 }
@@ -86,7 +86,7 @@ func (s UsersService) Insert(newUser dtos.NewUserDto) (dtos.UserDto, error) {
 
 	var user dtos.UserDto
 
-	exists := s.hasEmail(newUser.Email)
+	exists := s.HasEmail(newUser.Email)
 	if exists {
 		return user, errors.New("user with email already exists")
 	}
