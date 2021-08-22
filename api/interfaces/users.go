@@ -9,7 +9,6 @@ type IUsersRepository interface {
 	GetPassword(authLogin dtos.AuthLoginDto) (string, error)
 }
 type IUsersService interface {
-	ValidateNewUser(newUser dtos.NewUserDto) (errorMessages []string, err error)
 	HasEmail(email string) (exists bool)
 	Insert(newUser dtos.NewUserDto) (dtos.UserDto, error)
 	Get(ID int) (user dtos.UserDto, err error)

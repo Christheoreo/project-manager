@@ -19,45 +19,6 @@ func isEmailValid(email string) bool {
 	return err == nil
 }
 
-func (s *UsersService) ValidateNewUser(newUser dtos.NewUserDto) (errorMessages []string, err error) {
-
-	errorMessages = make([]string, 0)
-
-	if len(newUser.FirstName) < 3 {
-		e := "'firstName' needs to be at least 3 characters"
-		errorMessages = append(errorMessages, e)
-	}
-	if len(newUser.LastName) < 3 {
-		e := "'lastName' needs to be at least 3 characters"
-		errorMessages = append(errorMessages, e)
-	}
-
-	if !isEmailValid(newUser.Email) {
-		e := "'email' needs to be valid"
-		errorMessages = append(errorMessages, e)
-	}
-
-	if len(newUser.Password) < 8 {
-		e := "'password' needs to be at least 8 characters"
-		errorMessages = append(errorMessages, e)
-	}
-
-	if len(newUser.Password) > 25 {
-		e := "'password' needs to be less than or equal to 25 characters"
-		errorMessages = append(errorMessages, e)
-	}
-
-	if len(newUser.Password) >= 8 && newUser.Password != newUser.PasswordConfirm {
-		e := "the passwords do not match"
-		errorMessages = append(errorMessages, e)
-	}
-
-	if len(errorMessages) > 0 {
-		err = errors.New("invalid DTO")
-	}
-	return
-}
-
 func (s *UsersService) HasEmail(email string) (exists bool) {
 	_, err := s.UsersRepository.GetByEmail(email)
 	return err == nil
