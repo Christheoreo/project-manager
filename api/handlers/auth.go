@@ -25,15 +25,15 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	errMessages, err := h.UsersService.ValidateAuthDto(authLogin)
 	if err != nil {
-		returnStandardResponse(w, http.StatusBadRequest, errMessages)
+		returnStandardResponse(w, http.StatusUnprocessableEntity, errMessages)
 		return
 	}
 
 	// Check if a user with that email and password exists.
-	jwtToken, err := h.UsersService.ValidateCredentials(authLogin)
+	jwtToken, errorCode, err := h.UsersService.ValidateCredentials(authLogin)
 
 	if err != nil {
-		returnErrorResponse(w, http.StatusBadRequest, err)
+		returnErrorResponse(w, errorCode, err)
 		return
 	}
 

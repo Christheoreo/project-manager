@@ -15,5 +15,5 @@ type IUsersService interface {
 	Insert(newUser dtos.NewUserDto) (dtos.UserDto, error)
 	Get(ID int) (user dtos.UserDto, err error)
 	GetByEmail(email string) (user dtos.UserDto, err error)
-	ValidateCredentials(authLogin dtos.AuthLoginDto) (jwtToken string, err error)
+	ValidateCredentials(authLogin dtos.AuthLoginDto) (jwtToken string, errCode int, err error)
 }

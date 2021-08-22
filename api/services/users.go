@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"net/http"
 	"net/mail"
 
 	"github.com/Christheoreo/project-manager/dtos"
@@ -104,19 +105,19 @@ func (s UsersService) Get(ID int) (user dtos.UserDto, err error) {
 func (s UsersService) GetByEmail(email string) (user dtos.UserDto, err error) {
 	return s.UsersRepository.GetByEmail(email)
 }
-func (s UsersService) ValidateCredentials(authLogin dtos.AuthLoginDto) (string, error) {
+func (s UsersService) ValidateCredentials(authLogin dtos.AuthLoginDto) (string, int, error) {
 	var user dtos.UserDto
 
 	passwordHash, err := s.UsersRepository.GetPassword(authLogin)
 
 	if err != nil {
-		return "", err
+		return "", http.StatusUnprocessableEntity, errors.New("invalid details")
 	}
 
 	matches := utils.CheckPasswordHash(authLogin.Password, passwordHash)
 
 	if !matches {
-		return "", errors.New("invalid login details")
+		return "", http.StatusBadRequest, errors.New("invalid login details")
 	}
 
 	user, _ = s.GetByEmail(authLogin.Email)
@@ -124,8 +125,8 @@ func (s UsersService) ValidateCredentials(authLogin dtos.AuthLoginDto) (string, 
 	jwtToken, err := utils.CreateToken(user.ID)
 
 	if err != nil {
-		return "", errors.New("could not sign the token")
+		return "", http.StatusInternalServerError, errors.New("could not sign the token")
 	}
 
-	return jwtToken, nil
+	return jwtToken, -1, nil
 }
