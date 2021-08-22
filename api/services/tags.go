@@ -36,17 +36,3 @@ func (s *TagsService) Get(id int) (tag dtos.TagDto, err error) {
 func (s *TagsService) GetAll(user dtos.UserDto) (tags []dtos.TagDto, err error) {
 	return s.TagsRepository.GetAllForUser(user.ID)
 }
-func (s *TagsService) ValidateNewTagDto(newTag dtos.NewTagDto) ([]string, error) {
-
-	errorMessages := make([]string, 0)
-	var err error
-	if len(newTag.Name) < 3 {
-		e := "'name' needs to be at least 3 characters"
-		errorMessages = append(errorMessages, e)
-	}
-
-	if len(errorMessages) > 0 {
-		err = errors.New("invalid DTO")
-	}
-	return errorMessages, err
-}

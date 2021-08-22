@@ -13,5 +13,4 @@ type ITagsService interface {
 	Create(newTag dtos.NewTagDto, user dtos.UserDto) (tag dtos.TagDto, err error)
 	GetAll(user dtos.UserDto) (tags []dtos.TagDto, err error)
 	Get(id int) (tag dtos.TagDto, err error)
-	ValidateNewTagDto(newTag dtos.NewTagDto) (errorMessages []string, err error)
 }

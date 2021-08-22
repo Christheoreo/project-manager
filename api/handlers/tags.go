@@ -16,6 +16,21 @@ type (
 	}
 )
 
+func (h *TagsHandler) validateNewTagDto(newTag dtos.NewTagDto) ([]string, error) {
+
+	errorMessages := make([]string, 0)
+	var err error
+	if len(newTag.Name) < 3 {
+		e := "'name' needs to be at least 3 characters"
+		errorMessages = append(errorMessages, e)
+	}
+
+	if len(errorMessages) > 0 {
+		err = errors.New("invalid DTO")
+	}
+	return errorMessages, err
+}
+
 func (h *TagsHandler) Create(w http.ResponseWriter, r *http.Request) {
 	user := r.Context().Value(middleware.ContextUserKey).(dtos.UserDto)
 	var newTag dtos.NewTagDto
@@ -26,7 +41,7 @@ func (h *TagsHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errMessages, err := h.TagsService.ValidateNewTagDto(newTag)
+	errMessages, err := h.validateNewTagDto(newTag)
 
 	if err != nil {
 		returnStandardResponse(w, http.StatusUnprocessableEntity, errMessages)
