@@ -16,7 +16,7 @@ func (s *TagsService) Create(newTag dtos.NewTagDto, user dtos.UserDto) (tag dtos
 	taken, _ := s.TagsRepository.Exists(newTag.Name, user.ID)
 
 	if taken {
-		err = errors.New("email is taken")
+		err = errors.New("tag name already exists")
 		return
 	}
 

@@ -13,7 +13,7 @@ type PrioritiesRepositoryPostgres struct {
 
 func (r *PrioritiesRepositoryPostgres) Exists(ID int) (exists bool, err error) {
 	var count int
-	query := "SELECT COUNT(*) FROM \"priorities\" where \"id\" = $1"
+	query := `SELECT COUNT(*) FROM "priorities" where "id" = $1`
 	err = r.Pool.QueryRow(context.Background(), query, ID).Scan(&count)
 	if err != nil {
 		return

@@ -29,13 +29,13 @@ func (h *TagsHandler) Create(w http.ResponseWriter, r *http.Request) {
 	errMessages, err := h.TagsService.ValidateNewTagDto(newTag)
 
 	if err != nil {
-		returnStandardResponse(w, http.StatusBadRequest, errMessages)
+		returnStandardResponse(w, http.StatusUnprocessableEntity, errMessages)
 		return
 	}
 
 	tag, err := h.TagsService.Create(newTag, user)
 	if err != nil {
-		returnErrorResponse(w, http.StatusInternalServerError, err)
+		returnErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
 
