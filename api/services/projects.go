@@ -2,7 +2,6 @@ package services
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/Christheoreo/project-manager/dtos"
 	"github.com/Christheoreo/project-manager/interfaces"
@@ -33,75 +32,27 @@ type (
 	}
 )
 
-func (s *ProjectsService) Get(ID int) (dtos.ProjectDto, error) {
-	// @todo
-	// need to check if A) ID exists and B) User owns the project.
-	return s.ProjectsRepository.GetByID(ID)
+func (s *ProjectsService) Get(ID int, user dtos.UserDto) (dtos.ProjectDto, error) {
+	project, err := s.ProjectsRepository.GetByID(ID)
+	if err != nil {
+		return project, errors.New("invalid project")
+	}
+
+	userID, err := s.ProjectsRepository.GetOwnerID(project.ID)
+	if err != nil {
+		return project, errors.New("invalid project")
+	}
+
+	if userID != user.ID {
+		return project, errors.New("you do not have access to this project")
+	}
+
+	return project, nil
 }
 
 func (s *ProjectsService) All(user dtos.UserDto) ([]dtos.ProjectDto, error) {
 	//
 	return s.ProjectsRepository.GetByUser(user)
-}
-func (s *ProjectsService) ValidateNewProjectDto(newProject dtos.NewProjectDto, user dtos.UserDto) ([]string, error) {
-
-	errorMessages := make([]string, 0)
-
-	if len(newProject.Title) < 3 {
-		e := "'title' needs to be at least 3 characters"
-		errorMessages = append(errorMessages, e)
-	}
-
-	if len(newProject.Description) < 3 {
-		e := "'description' needs to be at least 3 characters"
-		errorMessages = append(errorMessages, e)
-	}
-
-	tags, err := s.TagsRepository.GetAllForUser(user.ID)
-
-	if err != nil {
-		errorMessages = append(errorMessages, "invalid tags")
-	}
-
-	for _, tagID := range newProject.TagIDs {
-		exists := false
-		for _, tag := range tags {
-			if tag.ID == tagID {
-				exists = true
-				break
-			}
-		}
-		if !exists {
-			e := fmt.Sprintf("'%d' is not a recognised tag", tagID)
-			errorMessages = append(errorMessages, e)
-		}
-	}
-
-	// continue validation stuff here
-
-	priorityExists, err := s.PrioritiesRepository.Exists(newProject.PriorityID)
-
-	if err != nil {
-		errorMessages = append(errorMessages, "PriorityID is bad.")
-	} else if !priorityExists {
-		errorMessages = append(errorMessages, "PriorityID is invalid.")
-	}
-
-	// check to see if project name already exists.
-
-	isTaken, err := s.ProjectsRepository.TitleTaken(newProject.Title, user.ID)
-
-	if err != nil {
-		errorMessages = append(errorMessages, "could not verify if project exists.")
-	}
-
-	if isTaken {
-		errorMessages = append(errorMessages, "project name already exists.")
-	}
-	if len(errorMessages) > 0 {
-		err = errors.New("invalid DTO")
-	}
-	return errorMessages, err
 }
 
 func (s *ProjectsService) Create(newProjectDto dtos.NewProjectDto, user dtos.UserDto) (project dtos.ProjectDto, err error) {
@@ -110,4 +61,9 @@ func (s *ProjectsService) Create(newProjectDto dtos.NewProjectDto, user dtos.Use
 		return
 	}
 	return s.ProjectsRepository.GetByID(id)
+}
+
+func (s *ProjectsService) TitleTaken(title string, userID int) (bool, error) {
+	return s.ProjectsRepository.TitleTaken(title, userID)
+
 }

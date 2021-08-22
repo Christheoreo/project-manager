@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/Christheoreo/project-manager/dtos"
@@ -14,6 +15,26 @@ type (
 	}
 )
 
+func (h *AuthHandler) validateAuthDto(authLogin dtos.AuthLoginDto) (errorMessages []string, err error) {
+
+	errorMessages = make([]string, 0)
+
+	if !isEmailValid(authLogin.Email) {
+		e := "'email' needs to be valid"
+		errorMessages = append(errorMessages, e)
+	}
+
+	if len(authLogin.Password) < 8 {
+		e := "'password' needs to be at least 8 characters"
+		errorMessages = append(errorMessages, e)
+	}
+
+	if len(errorMessages) > 0 {
+		err = errors.New("invalid DTO")
+	}
+	return
+}
+
 func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var authLogin dtos.AuthLoginDto
 
@@ -23,17 +44,17 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errMessages, err := h.UsersService.ValidateAuthDto(authLogin)
+	errMessages, err := h.validateAuthDto(authLogin)
 	if err != nil {
 		returnStandardResponse(w, http.StatusUnprocessableEntity, errMessages)
 		return
 	}
 
 	// Check if a user with that email and password exists.
-	jwtToken, errorCode, err := h.UsersService.ValidateCredentials(authLogin)
+	jwtToken, err := h.UsersService.ValidateCredentials(authLogin)
 
 	if err != nil {
-		returnErrorResponse(w, errorCode, err)
+		returnErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
 
