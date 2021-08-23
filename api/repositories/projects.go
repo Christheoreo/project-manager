@@ -40,45 +40,6 @@ func (r *ProjectsRepositoryPostgres) GetByID(ID int) (project models.Project, er
 	}
 	return
 }
-func (r *ProjectsRepositoryPostgres) GetByUserBackup(user models.User) ([]models.Project, error) {
-	projects := make([]models.Project, 0)
-
-	query := "SELECT p.id, p.title, p.description, pr.name FROM projects p inner join priorities pr on pr.id = p.priority_id where p.user_id = $1"
-	rows, err := r.Pool.Query(context.Background(), query, user.ID)
-	if err != nil {
-		return projects, err
-	}
-
-	for rows.Next() {
-		var project models.Project
-		err = rows.Scan(&project.ID, &project.Title, &project.Description, &project.Priority)
-		if err != nil {
-			return projects, err
-		}
-
-		// Get the tags for the project.
-		queryTags := "SELECT t.name FROM tags t inner join project_tags pt on pt.tag_id = t.id where pt.project_id = $1"
-		rowTags, errTags := r.Pool.Query(context.Background(), queryTags, project.ID)
-		if errTags != nil {
-			return projects, errTags
-		}
-
-		project.Tags = make([]string, 0)
-		for rowTags.Next() {
-			var tag string
-			errTags = rowTags.Scan(&tag)
-
-			if errTags != nil {
-				return projects, errTags
-			}
-
-			project.Tags = append(project.Tags, tag)
-		}
-
-		projects = append(projects, project)
-	}
-	return projects, nil
-}
 
 func (r *ProjectsRepositoryPostgres) GetByUser(user models.User) ([]models.Project, error) {
 	projects := make([]models.Project, 0)
