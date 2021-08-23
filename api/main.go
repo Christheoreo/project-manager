@@ -8,7 +8,6 @@ import (
 
 	"github.com/Christheoreo/project-manager/database"
 	"github.com/Christheoreo/project-manager/handlers"
-	"github.com/Christheoreo/project-manager/middleware"
 	"github.com/Christheoreo/project-manager/repositories"
 	"github.com/Christheoreo/project-manager/services"
 	"github.com/gorilla/mux"
@@ -21,10 +20,8 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	/**
-	 * Set up the database connection
-	 * Then defer the closing.
-	 **/
+	// Set up the database connection
+	// Then defer the closing.
 
 	pool, err := database.EstablishConnectionPool()
 	if err != nil {
@@ -84,13 +81,13 @@ func main() {
 	}
 
 	// Set up middleware
-	jwtMiddleware := middleware.JWTMiddleware{
+	jwtMiddleware := handlers.JWTMiddleware{
 		UsersService: &usersService,
 	}
 
 	// Applying top level middleware
-	r.Use(middleware.HeadersMiddleware)
-	r.Use(middleware.CorsMiddleware)
+	r.Use(handlers.HeadersMiddleware)
+	r.Use(handlers.CorsMiddleware)
 
 	// Unprotected routes
 	r.HandleFunc("/users/register", usersHandler.RegisterHandler).Methods(http.MethodPost, http.MethodOptions)

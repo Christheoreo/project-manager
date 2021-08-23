@@ -11,13 +11,11 @@ type PrioritiesRepositoryPostgres struct {
 	Pool *pgxpool.Pool
 }
 
-func (r *PrioritiesRepositoryPostgres) Exists(ID int) (exists bool, err error) {
+func (r *PrioritiesRepositoryPostgres) Exists(ID int) (bool, error) {
 	var count int
 	query := `SELECT COUNT(*) FROM "priorities" where "id" = $1`
-	err = r.Pool.QueryRow(context.Background(), query, ID).Scan(&count)
-	if err != nil {
-		return
+	if err := r.Pool.QueryRow(context.Background(), query, ID).Scan(&count); err != nil {
+		return false, err
 	}
-	exists = count > 0
-	return
+	return count > 0, nil
 }

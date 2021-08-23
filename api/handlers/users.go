@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/mail"
 
 	"github.com/Christheoreo/project-manager/dtos"
 	"github.com/Christheoreo/project-manager/interfaces"
-	"github.com/Christheoreo/project-manager/middleware"
 )
 
 type (
@@ -15,6 +15,11 @@ type (
 		UsersService interfaces.IUsersService
 	}
 )
+
+func isEmailValid(email string) bool {
+	_, err := mail.ParseAddress(email)
+	return err == nil
+}
 
 func (h *UserHandler) validateNewUser(newUser dtos.NewUserDto) (errorMessages []string, err error) {
 
@@ -79,6 +84,6 @@ func (h *UserHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *UserHandler) GetRequester(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value(middleware.ContextUserKey)
+	user := getUser(r)
 	returnObjectResponse(w, http.StatusOK, user)
 }

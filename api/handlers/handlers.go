@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"net/mail"
 
 	"github.com/Christheoreo/project-manager/dtos"
 )
@@ -31,7 +30,6 @@ func returnObjectResponse(w http.ResponseWriter, status int, object interface{})
 	json.NewEncoder(w).Encode(object)
 }
 
-func isEmailValid(email string) bool {
-	_, err := mail.ParseAddress(email)
-	return err == nil
+func getUser(r *http.Request) dtos.UserDto {
+	return r.Context().Value(ContextUserKey).(dtos.UserDto)
 }

@@ -2,11 +2,14 @@ package services
 
 import (
 	"errors"
-	"net/mail"
+	"os"
+	"strconv"
+	"time"
 
 	"github.com/Christheoreo/project-manager/dtos"
 	"github.com/Christheoreo/project-manager/interfaces"
-	"github.com/Christheoreo/project-manager/utils"
+	"github.com/golang-jwt/jwt"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Implements IUserService
@@ -14,8 +17,32 @@ type UsersService struct {
 	UsersRepository interfaces.IUsersRepository
 }
 
-func isEmailValid(email string) bool {
-	_, err := mail.ParseAddress(email)
+var signingKey []byte
+
+func init() {
+	jwtKey := os.Getenv("JWT_KEY")
+	signingKey = []byte(jwtKey)
+}
+
+func createJwtToken(userId int) (string, error) {
+
+	token := jwt.New(jwt.SigningMethodHS256)
+	token.Claims =
+		&jwt.StandardClaims{
+			Subject:   strconv.Itoa(userId),
+			ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),
+		}
+
+	return token.SignedString(signingKey)
+}
+
+func hashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	return string(bytes), err
+}
+
+func checkPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
 
@@ -31,6 +58,16 @@ func (s UsersService) Insert(newUser dtos.NewUserDto) (dtos.UserDto, error) {
 	if exists {
 		return user, errors.New("user with email already exists")
 	}
+
+	passwordHash, err := hashPassword(newUser.Password)
+	if err != nil {
+		err = errors.New("could not encrypt password")
+		return user, err
+	}
+
+	newUser.Password = passwordHash
+	newUser.PasswordConfirm = passwordHash
+
 	ID, err := s.UsersRepository.Insert(newUser)
 
 	if err != nil {
@@ -54,7 +91,7 @@ func (s UsersService) ValidateCredentials(authLogin dtos.AuthLoginDto) (string, 
 		return "", errors.New("invalid details")
 	}
 
-	matches := utils.CheckPasswordHash(authLogin.Password, passwordHash)
+	matches := checkPasswordHash(authLogin.Password, passwordHash)
 
 	if !matches {
 		return "", errors.New("invalid login details")
@@ -62,7 +99,7 @@ func (s UsersService) ValidateCredentials(authLogin dtos.AuthLoginDto) (string, 
 
 	user, _ = s.GetByEmail(authLogin.Email)
 
-	jwtToken, err := utils.CreateToken(user.ID)
+	jwtToken, err := createJwtToken(user.ID)
 
 	if err != nil {
 		return "", errors.New("could not sign the token")

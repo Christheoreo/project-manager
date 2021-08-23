@@ -12,9 +12,7 @@ type ProjectsRepositoryPostgres struct {
 	Pool *pgxpool.Pool
 }
 
-/**
-  * @todo get the components
-**/
+// @todo get the components
 func (r *ProjectsRepositoryPostgres) GetByID(ID int) (project dtos.ProjectDto, err error) {
 	query := "SELECT p.id, p.title, p.description, pr.name FROM projects p inner join priorities pr on pr.id = p.priority_id where p.id = $1"
 	err = r.Pool.QueryRow(context.Background(), query, ID).Scan(&project.ID, &project.Title, &project.Description, &project.Priority)
@@ -42,7 +40,7 @@ func (r *ProjectsRepositoryPostgres) GetByID(ID int) (project dtos.ProjectDto, e
 	}
 	return
 }
-func (r *ProjectsRepositoryPostgres) GetByUser(user dtos.UserDto) ([]dtos.ProjectDto, error) {
+func (r *ProjectsRepositoryPostgres) GetByUserBackup(user dtos.UserDto) ([]dtos.ProjectDto, error) {
 	projects := make([]dtos.ProjectDto, 0)
 
 	query := "SELECT p.id, p.title, p.description, pr.name FROM projects p inner join priorities pr on pr.id = p.priority_id where p.user_id = $1"
@@ -79,6 +77,61 @@ func (r *ProjectsRepositoryPostgres) GetByUser(user dtos.UserDto) ([]dtos.Projec
 
 		projects = append(projects, project)
 	}
+	return projects, nil
+}
+
+func (r *ProjectsRepositoryPostgres) GetByUser(user dtos.UserDto) ([]dtos.ProjectDto, error) {
+	projects := make([]dtos.ProjectDto, 0)
+
+	query := `SELECT 
+		p.id,
+		p.title,
+		p.description,
+		pr.name,
+		COALESCE(X.name,'')
+	FROM projects p 
+		INNER JOIN priorities pr ON p.priority_id = pr.id
+		LEFT OUTER JOIN 
+	(select * from project_tags pt 
+		INNER JOIN tags t ON pt.tag_id = t.id) as X ON p.id = X.project_id
+	WHERE p.user_id = $1`
+	rows, err := r.Pool.Query(context.Background(), query, user.ID)
+	if err != nil {
+		return projects, err
+	}
+
+	projectsMap := make(map[int]dtos.ProjectDto)
+
+	for rows.Next() {
+		var project dtos.ProjectDto
+		var tag string
+
+		if err = rows.Scan(&project.ID, &project.Title, &project.Description, &project.Priority, &tag); err != nil {
+			return projects, err
+		}
+
+		p, ok := projectsMap[project.ID]
+
+		if ok {
+			if tag != "" {
+				p.Tags = append(p.Tags, tag)
+				projectsMap[project.ID] = p
+			}
+			continue
+		}
+
+		project.Tags = make([]string, 0)
+		projectsMap[project.ID] = project
+
+		if tag != "" {
+			project.Tags = append(project.Tags, tag)
+			projectsMap[project.ID] = project
+		}
+	}
+	for _, p := range projectsMap {
+		projects = append(projects, p)
+	}
+
 	return projects, nil
 }
 

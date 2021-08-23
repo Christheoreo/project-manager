@@ -7,7 +7,6 @@ import (
 
 	"github.com/Christheoreo/project-manager/dtos"
 	"github.com/Christheoreo/project-manager/interfaces"
-	"github.com/Christheoreo/project-manager/middleware"
 )
 
 type (
@@ -32,7 +31,7 @@ func (h *TagsHandler) validateNewTagDto(newTag dtos.NewTagDto) ([]string, error)
 }
 
 func (h *TagsHandler) Create(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value(middleware.ContextUserKey).(dtos.UserDto)
+	user := getUser(r)
 	var newTag dtos.NewTagDto
 
 	err := json.NewDecoder(r.Body).Decode(&newTag)
@@ -58,7 +57,7 @@ func (h *TagsHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TagsHandler) GetAllForRequester(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value(middleware.ContextUserKey).(dtos.UserDto)
+	user := getUser(r)
 
 	tags, err := h.TagsService.GetAll(user)
 

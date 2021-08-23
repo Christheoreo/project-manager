@@ -8,7 +8,6 @@ import (
 
 	"github.com/Christheoreo/project-manager/dtos"
 	"github.com/Christheoreo/project-manager/interfaces"
-	"github.com/Christheoreo/project-manager/middleware"
 )
 
 type (
@@ -79,7 +78,7 @@ func (h *ProjectsHandler) validateNewProjectDto(newProject dtos.NewProjectDto, u
 }
 
 func (p *ProjectsHandler) CreateProjectHandler(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value(middleware.ContextUserKey).(dtos.UserDto)
+	user := getUser(r)
 	var newProject dtos.NewProjectDto
 
 	err := json.NewDecoder(r.Body).Decode(&newProject)
@@ -106,7 +105,7 @@ func (p *ProjectsHandler) CreateProjectHandler(w http.ResponseWriter, r *http.Re
 }
 
 func (p *ProjectsHandler) GetMyProjects(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value(middleware.ContextUserKey).(dtos.UserDto)
+	user := getUser(r)
 
 	projects, err := p.ProjectsService.All(user)
 
