@@ -1,5 +1,5 @@
 # Project Manager
-By Chris Finlow
+By Christheoreo
 ## About this project
 My girlfriend is forever moaning about how I have too many projects on the go.
 
@@ -17,22 +17,9 @@ This project will be running from [My website](https://project-manager.chrisfinl
 ## Can I contribute?
 Yes! I am keen to have this project used by many people who have the same struggles as myself.
 
-Open an issue and a PR to work off, and we can review and go from there!
-
 ## What's going on in here?
-So this project uses `go` for the API which uses mongodb as the database.
+So this project uses `go` for the API which uses postgres as the database.
 [Svelte](https://svelte.dev/) is the Front end framework I have chosen for the UI.
 
 ## About me
-I am a full time Lead Developer for 17 Oranges. I mainly work with NodeJS and PHP - however my GoLang skills are slowly getting on par with the rest.
-
-I am keen to get this project going, but I care more for my mental health and will prioritize relaxing after a long day than cramming more development work in. 
-
-### Functionality to come
-- Register 
-- Login
-- Logout
-- Create a project
-
-
-### Current functionality
+I am a full time Lead Developer for 17 Oranges. I mainly work with NodeJS and PHP - however my GoLang skills are slowly getting better
