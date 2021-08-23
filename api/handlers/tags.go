@@ -5,8 +5,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/Christheoreo/project-manager/dtos"
 	"github.com/Christheoreo/project-manager/interfaces"
+	"github.com/Christheoreo/project-manager/models"
 )
 
 type (
@@ -15,7 +15,7 @@ type (
 	}
 )
 
-func (h *TagsHandler) validateNewTagDto(newTag dtos.NewTagDto) ([]string, error) {
+func (h *TagsHandler) validateNewTagDto(newTag models.NewTagDto) ([]string, error) {
 
 	errorMessages := make([]string, 0)
 	var err error
@@ -32,7 +32,7 @@ func (h *TagsHandler) validateNewTagDto(newTag dtos.NewTagDto) ([]string, error)
 
 func (h *TagsHandler) Create(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
-	var newTag dtos.NewTagDto
+	var newTag models.NewTagDto
 
 	err := json.NewDecoder(r.Body).Decode(&newTag)
 	if err != nil {

@@ -3,8 +3,8 @@ package services
 import (
 	"errors"
 
-	"github.com/Christheoreo/project-manager/dtos"
 	"github.com/Christheoreo/project-manager/interfaces"
+	"github.com/Christheoreo/project-manager/models"
 )
 
 type ProjectsService struct {
@@ -32,7 +32,7 @@ type (
 	}
 )
 
-func (s *ProjectsService) Get(ID int, user dtos.UserDto) (dtos.ProjectDto, error) {
+func (s *ProjectsService) Get(ID int, user models.UserDto) (models.ProjectDto, error) {
 	project, err := s.ProjectsRepository.GetByID(ID)
 	if err != nil {
 		return project, errors.New("invalid project")
@@ -50,12 +50,12 @@ func (s *ProjectsService) Get(ID int, user dtos.UserDto) (dtos.ProjectDto, error
 	return project, nil
 }
 
-func (s *ProjectsService) All(user dtos.UserDto) ([]dtos.ProjectDto, error) {
+func (s *ProjectsService) All(user models.UserDto) ([]models.ProjectDto, error) {
 	//
 	return s.ProjectsRepository.GetByUser(user)
 }
 
-func (s *ProjectsService) Create(newProjectDto dtos.NewProjectDto, user dtos.UserDto) (project dtos.ProjectDto, err error) {
+func (s *ProjectsService) Create(newProjectDto models.NewProjectDto, user models.UserDto) (project models.ProjectDto, err error) {
 	id, err := s.ProjectsRepository.Insert(newProjectDto, user)
 	if err != nil {
 		return

@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Christheoreo/project-manager/dtos"
 	"github.com/Christheoreo/project-manager/interfaces"
+	"github.com/Christheoreo/project-manager/models"
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -50,9 +50,9 @@ func (s *UsersService) HasEmail(email string) (exists bool) {
 	_, err := s.UsersRepository.GetByEmail(email)
 	return err == nil
 }
-func (s UsersService) Insert(newUser dtos.NewUserDto) (dtos.UserDto, error) {
+func (s UsersService) Insert(newUser models.NewUserDto) (models.UserDto, error) {
 
-	var user dtos.UserDto
+	var user models.UserDto
 
 	exists := s.HasEmail(newUser.Email)
 	if exists {
@@ -76,14 +76,14 @@ func (s UsersService) Insert(newUser dtos.NewUserDto) (dtos.UserDto, error) {
 	user, err = s.UsersRepository.GetByID(ID)
 	return user, err
 }
-func (s UsersService) Get(ID int) (user dtos.UserDto, err error) {
+func (s UsersService) Get(ID int) (user models.UserDto, err error) {
 	return s.UsersRepository.GetByID(ID)
 }
-func (s UsersService) GetByEmail(email string) (user dtos.UserDto, err error) {
+func (s UsersService) GetByEmail(email string) (user models.UserDto, err error) {
 	return s.UsersRepository.GetByEmail(email)
 }
-func (s UsersService) ValidateCredentials(authLogin dtos.AuthLoginDto) (string, error) {
-	var user dtos.UserDto
+func (s UsersService) ValidateCredentials(authLogin models.AuthLoginDto) (string, error) {
+	var user models.UserDto
 
 	passwordHash, err := s.UsersRepository.GetPassword(authLogin)
 

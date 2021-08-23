@@ -1,4 +1,4 @@
-package dtos
+package models
 
 type (
 	NewTagDto struct {

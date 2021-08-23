@@ -1,17 +1,17 @@
 package interfaces
 
-import "github.com/Christheoreo/project-manager/dtos"
+import "github.com/Christheoreo/project-manager/models"
 
 type IUsersRepository interface {
-	Insert(user dtos.NewUserDto) (int, error)
-	GetByID(id int) (dtos.UserDto, error)
-	GetByEmail(email string) (dtos.UserDto, error)
-	GetPassword(authLogin dtos.AuthLoginDto) (string, error)
+	Insert(user models.NewUserDto) (int, error)
+	GetByID(id int) (models.UserDto, error)
+	GetByEmail(email string) (models.UserDto, error)
+	GetPassword(authLogin models.AuthLoginDto) (string, error)
 }
 type IUsersService interface {
 	HasEmail(email string) (exists bool)
-	Insert(newUser dtos.NewUserDto) (dtos.UserDto, error)
-	Get(ID int) (user dtos.UserDto, err error)
-	GetByEmail(email string) (user dtos.UserDto, err error)
-	ValidateCredentials(authLogin dtos.AuthLoginDto) (jwtToken string, err error)
+	Insert(newUser models.NewUserDto) (models.UserDto, error)
+	Get(ID int) (user models.UserDto, err error)
+	GetByEmail(email string) (user models.UserDto, err error)
+	ValidateCredentials(authLogin models.AuthLoginDto) (jwtToken string, err error)
 }

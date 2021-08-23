@@ -5,8 +5,8 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/Christheoreo/project-manager/dtos"
 	"github.com/Christheoreo/project-manager/interfaces"
+	"github.com/Christheoreo/project-manager/models"
 )
 
 type (
@@ -15,7 +15,7 @@ type (
 	}
 )
 
-func (h *AuthHandler) validateAuthDto(authLogin dtos.AuthLoginDto) (errorMessages []string, err error) {
+func (h *AuthHandler) validateAuthDto(authLogin models.AuthLoginDto) (errorMessages []string, err error) {
 
 	errorMessages = make([]string, 0)
 
@@ -36,7 +36,7 @@ func (h *AuthHandler) validateAuthDto(authLogin dtos.AuthLoginDto) (errorMessage
 }
 
 func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	var authLogin dtos.AuthLoginDto
+	var authLogin models.AuthLoginDto
 
 	err := json.NewDecoder(r.Body).Decode(&authLogin)
 	if err != nil {
@@ -58,7 +58,7 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	returnObjectResponse(w, http.StatusOK, dtos.JwtResponse{
+	returnObjectResponse(w, http.StatusOK, models.JwtResponse{
 		AccessToken: jwtToken,
 	})
 

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Christheoreo/project-manager/dtos"
 	"github.com/Christheoreo/project-manager/interfaces"
+	"github.com/Christheoreo/project-manager/models"
 )
 
 type (
@@ -18,7 +18,7 @@ type (
 	}
 )
 
-func (h *ProjectsHandler) validateNewProjectDto(newProject dtos.NewProjectDto, user dtos.UserDto) ([]string, error) {
+func (h *ProjectsHandler) validateNewProjectDto(newProject models.NewProjectDto, user models.UserDto) ([]string, error) {
 
 	errorMessages := make([]string, 0)
 
@@ -79,7 +79,7 @@ func (h *ProjectsHandler) validateNewProjectDto(newProject dtos.NewProjectDto, u
 
 func (p *ProjectsHandler) CreateProjectHandler(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
-	var newProject dtos.NewProjectDto
+	var newProject models.NewProjectDto
 
 	err := json.NewDecoder(r.Body).Decode(&newProject)
 	if err != nil {

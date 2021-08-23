@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/Christheoreo/project-manager/dtos"
+	"github.com/Christheoreo/project-manager/models"
 )
 
 func returnStandardResponse(w http.ResponseWriter, status int, messages []string) {
-	var standardResponse dtos.StandardResponseDto = dtos.StandardResponseDto{
+	var standardResponse models.StandardResponseDto = models.StandardResponseDto{
 		Status:   status,
 		Messages: messages,
 	}
@@ -17,7 +17,7 @@ func returnStandardResponse(w http.ResponseWriter, status int, messages []string
 }
 
 func returnErrorResponse(w http.ResponseWriter, status int, err error) {
-	var standardResponse dtos.StandardResponseDto = dtos.StandardResponseDto{
+	var standardResponse models.StandardResponseDto = models.StandardResponseDto{
 		Status:   status,
 		Messages: []string{err.Error()},
 	}
@@ -30,6 +30,6 @@ func returnObjectResponse(w http.ResponseWriter, status int, object interface{})
 	json.NewEncoder(w).Encode(object)
 }
 
-func getUser(r *http.Request) dtos.UserDto {
-	return r.Context().Value(ContextUserKey).(dtos.UserDto)
+func getUser(r *http.Request) models.UserDto {
+	return r.Context().Value(ContextUserKey).(models.UserDto)
 }

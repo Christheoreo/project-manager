@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"net/mail"
 
-	"github.com/Christheoreo/project-manager/dtos"
 	"github.com/Christheoreo/project-manager/interfaces"
+	"github.com/Christheoreo/project-manager/models"
 )
 
 type (
@@ -21,7 +21,7 @@ func isEmailValid(email string) bool {
 	return err == nil
 }
 
-func (h *UserHandler) validateNewUser(newUser dtos.NewUserDto) (errorMessages []string, err error) {
+func (h *UserHandler) validateNewUser(newUser models.NewUserDto) (errorMessages []string, err error) {
 
 	errorMessages = make([]string, 0)
 
@@ -62,7 +62,7 @@ func (h *UserHandler) validateNewUser(newUser dtos.NewUserDto) (errorMessages []
 
 func (h *UserHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
-	var newUser dtos.NewUserDto
+	var newUser models.NewUserDto
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
 		returnErrorResponse(w, http.StatusBadRequest, err)

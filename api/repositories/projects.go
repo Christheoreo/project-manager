@@ -3,7 +3,7 @@ package repositories
 import (
 	"context"
 
-	"github.com/Christheoreo/project-manager/dtos"
+	"github.com/Christheoreo/project-manager/models"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -13,7 +13,7 @@ type ProjectsRepositoryPostgres struct {
 }
 
 // @todo get the components
-func (r *ProjectsRepositoryPostgres) GetByID(ID int) (project dtos.ProjectDto, err error) {
+func (r *ProjectsRepositoryPostgres) GetByID(ID int) (project models.ProjectDto, err error) {
 	query := "SELECT p.id, p.title, p.description, pr.name FROM projects p inner join priorities pr on pr.id = p.priority_id where p.id = $1"
 	err = r.Pool.QueryRow(context.Background(), query, ID).Scan(&project.ID, &project.Title, &project.Description, &project.Priority)
 	if err != nil {
@@ -40,8 +40,8 @@ func (r *ProjectsRepositoryPostgres) GetByID(ID int) (project dtos.ProjectDto, e
 	}
 	return
 }
-func (r *ProjectsRepositoryPostgres) GetByUserBackup(user dtos.UserDto) ([]dtos.ProjectDto, error) {
-	projects := make([]dtos.ProjectDto, 0)
+func (r *ProjectsRepositoryPostgres) GetByUserBackup(user models.UserDto) ([]models.ProjectDto, error) {
+	projects := make([]models.ProjectDto, 0)
 
 	query := "SELECT p.id, p.title, p.description, pr.name FROM projects p inner join priorities pr on pr.id = p.priority_id where p.user_id = $1"
 	rows, err := r.Pool.Query(context.Background(), query, user.ID)
@@ -50,7 +50,7 @@ func (r *ProjectsRepositoryPostgres) GetByUserBackup(user dtos.UserDto) ([]dtos.
 	}
 
 	for rows.Next() {
-		var project dtos.ProjectDto
+		var project models.ProjectDto
 		err = rows.Scan(&project.ID, &project.Title, &project.Description, &project.Priority)
 		if err != nil {
 			return projects, err
@@ -80,8 +80,8 @@ func (r *ProjectsRepositoryPostgres) GetByUserBackup(user dtos.UserDto) ([]dtos.
 	return projects, nil
 }
 
-func (r *ProjectsRepositoryPostgres) GetByUser(user dtos.UserDto) ([]dtos.ProjectDto, error) {
-	projects := make([]dtos.ProjectDto, 0)
+func (r *ProjectsRepositoryPostgres) GetByUser(user models.UserDto) ([]models.ProjectDto, error) {
+	projects := make([]models.ProjectDto, 0)
 
 	query := `SELECT 
 		p.id,
@@ -100,10 +100,10 @@ func (r *ProjectsRepositoryPostgres) GetByUser(user dtos.UserDto) ([]dtos.Projec
 		return projects, err
 	}
 
-	projectsMap := make(map[int]dtos.ProjectDto)
+	projectsMap := make(map[int]models.ProjectDto)
 
 	for rows.Next() {
-		var project dtos.ProjectDto
+		var project models.ProjectDto
 		var tag string
 
 		if err = rows.Scan(&project.ID, &project.Title, &project.Description, &project.Priority, &tag); err != nil {
@@ -145,7 +145,7 @@ func (r *ProjectsRepositoryPostgres) TitleTaken(title string, userID int) (bool,
 	return count > 0, nil
 
 }
-func (r *ProjectsRepositoryPostgres) Insert(project dtos.NewProjectDto, user dtos.UserDto) (int, error) {
+func (r *ProjectsRepositoryPostgres) Insert(project models.NewProjectDto, user models.UserDto) (int, error) {
 	var id int
 	query := `INSERT INTO "projects" (user_id, "title", "description", "priority_id") VALUES ($1,$2,$3,$4) RETURNING id`
 	err := r.Pool.QueryRow(context.Background(), query, user.ID, project.Title, project.Description, project.PriorityID).Scan(&id)

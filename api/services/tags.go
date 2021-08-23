@@ -3,15 +3,15 @@ package services
 import (
 	"errors"
 
-	"github.com/Christheoreo/project-manager/dtos"
 	"github.com/Christheoreo/project-manager/interfaces"
+	"github.com/Christheoreo/project-manager/models"
 )
 
 type TagsService struct {
 	TagsRepository interfaces.ITagsRepository
 }
 
-func (s *TagsService) Create(newTag dtos.NewTagDto, user dtos.UserDto) (tag dtos.TagDto, err error) {
+func (s *TagsService) Create(newTag models.NewTagDto, user models.UserDto) (tag models.TagDto, err error) {
 
 	taken, _ := s.TagsRepository.Exists(newTag.Name, user.ID)
 
@@ -30,9 +30,9 @@ func (s *TagsService) Create(newTag dtos.NewTagDto, user dtos.UserDto) (tag dtos
 
 	return
 }
-func (s *TagsService) Get(id int) (tag dtos.TagDto, err error) {
+func (s *TagsService) Get(id int) (tag models.TagDto, err error) {
 	return s.TagsRepository.GetById(id)
 }
-func (s *TagsService) GetAll(user dtos.UserDto) (tags []dtos.TagDto, err error) {
+func (s *TagsService) GetAll(user models.UserDto) (tags []models.TagDto, err error) {
 	return s.TagsRepository.GetAllForUser(user.ID)
 }
