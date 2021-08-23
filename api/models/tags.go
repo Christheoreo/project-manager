@@ -1,11 +1,11 @@
 package models
 
 type (
-	NewTagDto struct {
+	NewTag struct {
 		Name string `json:"name"`
 	}
 
-	TagDto struct {
+	Tag struct {
 		ID   int    `json:"id"`
 		Name string `json:"name"`
 	}

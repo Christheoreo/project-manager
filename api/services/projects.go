@@ -32,7 +32,7 @@ type (
 	}
 )
 
-func (s *ProjectsService) Get(ID int, user models.UserDto) (models.ProjectDto, error) {
+func (s *ProjectsService) Get(ID int, user models.User) (models.Project, error) {
 	project, err := s.ProjectsRepository.GetByID(ID)
 	if err != nil {
 		return project, errors.New("invalid project")
@@ -50,12 +50,12 @@ func (s *ProjectsService) Get(ID int, user models.UserDto) (models.ProjectDto, e
 	return project, nil
 }
 
-func (s *ProjectsService) All(user models.UserDto) ([]models.ProjectDto, error) {
+func (s *ProjectsService) All(user models.User) ([]models.Project, error) {
 	//
 	return s.ProjectsRepository.GetByUser(user)
 }
 
-func (s *ProjectsService) Create(newProjectDto models.NewProjectDto, user models.UserDto) (project models.ProjectDto, err error) {
+func (s *ProjectsService) Create(newProjectDto models.NewProject, user models.User) (project models.Project, err error) {
 	id, err := s.ProjectsRepository.Insert(newProjectDto, user)
 	if err != nil {
 		return

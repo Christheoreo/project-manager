@@ -21,7 +21,7 @@ func isEmailValid(email string) bool {
 	return err == nil
 }
 
-func (h *UserHandler) validateNewUser(newUser models.NewUserDto) (errorMessages []string, err error) {
+func (h *UserHandler) validateNewUser(newUser models.NewUser) (errorMessages []string, err error) {
 
 	errorMessages = make([]string, 0)
 
@@ -62,7 +62,7 @@ func (h *UserHandler) validateNewUser(newUser models.NewUserDto) (errorMessages 
 
 func (h *UserHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
-	var newUser models.NewUserDto
+	var newUser models.NewUser
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
 		returnErrorResponse(w, http.StatusBadRequest, err)

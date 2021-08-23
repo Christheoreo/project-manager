@@ -3,15 +3,15 @@ package interfaces
 import "github.com/Christheoreo/project-manager/models"
 
 type IUsersRepository interface {
-	Insert(user models.NewUserDto) (int, error)
-	GetByID(id int) (models.UserDto, error)
-	GetByEmail(email string) (models.UserDto, error)
-	GetPassword(authLogin models.AuthLoginDto) (string, error)
+	Insert(user models.NewUser) (int, error)
+	GetByID(id int) (models.User, error)
+	GetByEmail(email string) (models.User, error)
+	GetPassword(authLogin models.AuthLogin) (string, error)
 }
 type IUsersService interface {
 	HasEmail(email string) (exists bool)
-	Insert(newUser models.NewUserDto) (models.UserDto, error)
-	Get(ID int) (user models.UserDto, err error)
-	GetByEmail(email string) (user models.UserDto, err error)
-	ValidateCredentials(authLogin models.AuthLoginDto) (jwtToken string, err error)
+	Insert(newUser models.NewUser) (models.User, error)
+	Get(ID int) (user models.User, err error)
+	GetByEmail(email string) (user models.User, err error)
+	ValidateCredentials(authLogin models.AuthLogin) (jwtToken string, err error)
 }

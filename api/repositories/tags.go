@@ -12,26 +12,26 @@ type TagsRepositoryPostgres struct {
 	Pool *pgxpool.Pool
 }
 
-func (r *TagsRepositoryPostgres) Insert(tag models.NewTagDto, userId int) (id int, err error) {
+func (r *TagsRepositoryPostgres) Insert(tag models.NewTag, userId int) (id int, err error) {
 	query := `INSERT INTO tags ("name", user_id) VALUES ($1,$2) RETURNING id`
 	err = r.Pool.QueryRow(context.Background(), query, tag.Name, userId).Scan(&id)
 	return
 }
 
-func (r *TagsRepositoryPostgres) GetById(id int) (tag models.TagDto, err error) {
+func (r *TagsRepositoryPostgres) GetById(id int) (tag models.Tag, err error) {
 	query := `SELECT id, "name" FROM tags WHERE id = $1`
 	err = r.Pool.QueryRow(context.Background(), query, id).Scan(&tag.ID, &tag.Name)
 	return
 }
-func (r *TagsRepositoryPostgres) GetAllForUser(userID int) (tags []models.TagDto, err error) {
+func (r *TagsRepositoryPostgres) GetAllForUser(userID int) (tags []models.Tag, err error) {
 	query := `SELECT id, "name" from tags where user_id = $1`
 	rows, err := r.Pool.Query(context.Background(), query, userID)
 	if err != nil {
 		return
 	}
-	tags = make([]models.TagDto, 0)
+	tags = make([]models.Tag, 0)
 	for rows.Next() {
-		var tag models.TagDto
+		var tag models.Tag
 
 		err = rows.Scan(&tag.ID, &tag.Name)
 		if err != nil {

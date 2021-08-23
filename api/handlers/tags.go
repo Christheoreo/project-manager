@@ -15,7 +15,7 @@ type (
 	}
 )
 
-func (h *TagsHandler) validateNewTagDto(newTag models.NewTagDto) ([]string, error) {
+func (h *TagsHandler) validateNewTagDto(newTag models.NewTag) ([]string, error) {
 
 	errorMessages := make([]string, 0)
 	var err error
@@ -32,7 +32,7 @@ func (h *TagsHandler) validateNewTagDto(newTag models.NewTagDto) ([]string, erro
 
 func (h *TagsHandler) Create(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
-	var newTag models.NewTagDto
+	var newTag models.NewTag
 
 	err := json.NewDecoder(r.Body).Decode(&newTag)
 	if err != nil {

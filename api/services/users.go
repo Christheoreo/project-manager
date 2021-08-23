@@ -50,9 +50,9 @@ func (s *UsersService) HasEmail(email string) (exists bool) {
 	_, err := s.UsersRepository.GetByEmail(email)
 	return err == nil
 }
-func (s UsersService) Insert(newUser models.NewUserDto) (models.UserDto, error) {
+func (s UsersService) Insert(newUser models.NewUser) (models.User, error) {
 
-	var user models.UserDto
+	var user models.User
 
 	exists := s.HasEmail(newUser.Email)
 	if exists {
@@ -76,14 +76,14 @@ func (s UsersService) Insert(newUser models.NewUserDto) (models.UserDto, error) 
 	user, err = s.UsersRepository.GetByID(ID)
 	return user, err
 }
-func (s UsersService) Get(ID int) (user models.UserDto, err error) {
+func (s UsersService) Get(ID int) (user models.User, err error) {
 	return s.UsersRepository.GetByID(ID)
 }
-func (s UsersService) GetByEmail(email string) (user models.UserDto, err error) {
+func (s UsersService) GetByEmail(email string) (user models.User, err error) {
 	return s.UsersRepository.GetByEmail(email)
 }
-func (s UsersService) ValidateCredentials(authLogin models.AuthLoginDto) (string, error) {
-	var user models.UserDto
+func (s UsersService) ValidateCredentials(authLogin models.AuthLogin) (string, error) {
+	var user models.User
 
 	passwordHash, err := s.UsersRepository.GetPassword(authLogin)
 

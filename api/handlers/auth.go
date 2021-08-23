@@ -15,7 +15,7 @@ type (
 	}
 )
 
-func (h *AuthHandler) validateAuthDto(authLogin models.AuthLoginDto) (errorMessages []string, err error) {
+func (h *AuthHandler) validateAuthDto(authLogin models.AuthLogin) (errorMessages []string, err error) {
 
 	errorMessages = make([]string, 0)
 
@@ -36,7 +36,7 @@ func (h *AuthHandler) validateAuthDto(authLogin models.AuthLoginDto) (errorMessa
 }
 
 func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	var authLogin models.AuthLoginDto
+	var authLogin models.AuthLogin
 
 	err := json.NewDecoder(r.Body).Decode(&authLogin)
 	if err != nil {

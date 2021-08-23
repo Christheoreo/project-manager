@@ -8,7 +8,7 @@ import (
 )
 
 func returnStandardResponse(w http.ResponseWriter, status int, messages []string) {
-	var standardResponse models.StandardResponseDto = models.StandardResponseDto{
+	var standardResponse models.StandardResponse = models.StandardResponse{
 		Status:   status,
 		Messages: messages,
 	}
@@ -17,7 +17,7 @@ func returnStandardResponse(w http.ResponseWriter, status int, messages []string
 }
 
 func returnErrorResponse(w http.ResponseWriter, status int, err error) {
-	var standardResponse models.StandardResponseDto = models.StandardResponseDto{
+	var standardResponse models.StandardResponse = models.StandardResponse{
 		Status:   status,
 		Messages: []string{err.Error()},
 	}
@@ -30,6 +30,6 @@ func returnObjectResponse(w http.ResponseWriter, status int, object interface{})
 	json.NewEncoder(w).Encode(object)
 }
 
-func getUser(r *http.Request) models.UserDto {
-	return r.Context().Value(ContextUserKey).(models.UserDto)
+func getUser(r *http.Request) models.User {
+	return r.Context().Value(ContextUserKey).(models.User)
 }

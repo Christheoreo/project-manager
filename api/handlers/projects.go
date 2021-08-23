@@ -18,7 +18,7 @@ type (
 	}
 )
 
-func (h *ProjectsHandler) validateNewProjectDto(newProject models.NewProjectDto, user models.UserDto) ([]string, error) {
+func (h *ProjectsHandler) validateNewProjectDto(newProject models.NewProject, user models.User) ([]string, error) {
 
 	errorMessages := make([]string, 0)
 
@@ -79,7 +79,7 @@ func (h *ProjectsHandler) validateNewProjectDto(newProject models.NewProjectDto,
 
 func (p *ProjectsHandler) CreateProjectHandler(w http.ResponseWriter, r *http.Request) {
 	user := getUser(r)
-	var newProject models.NewProjectDto
+	var newProject models.NewProject
 
 	err := json.NewDecoder(r.Body).Decode(&newProject)
 	if err != nil {

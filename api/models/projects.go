@@ -1,33 +1,33 @@
 package models
 
 type (
-	NewProjectComponentDto struct {
+	NewProjectComponent struct {
 		Title       string      `json:"title"`
 		Description string      `json:"description"`
 		Data        interface{} `json:"data"`
 	}
 
-	ProjectComponentDto struct {
+	ProjectComponent struct {
 		ID          int         `json:"id"`
 		Title       string      `json:"title"`
 		Description string      `json:"description"`
 		Data        interface{} `json:"data"`
 	}
 
-	NewProjectDto struct {
-		Title       string                   `json:"title"`
-		Description string                   `json:"description"`
-		TagIDs      []int                    `json:"tagIds"`
-		PriorityID  int                      `json:"priorityId"`
-		Components  []NewProjectComponentDto `json:"components"`
-	}
-
-	ProjectDto struct {
-		ID          int                   `json:"id"`
+	NewProject struct {
 		Title       string                `json:"title"`
 		Description string                `json:"description"`
-		Tags        []string              `json:"tags"`
-		Priority    string                `json:"priority"`
-		Components  []ProjectComponentDto `json:"components"`
+		TagIDs      []int                 `json:"tagIds"`
+		PriorityID  int                   `json:"priorityId"`
+		Components  []NewProjectComponent `json:"components"`
+	}
+
+	Project struct {
+		ID          int                `json:"id"`
+		Title       string             `json:"title"`
+		Description string             `json:"description"`
+		Tags        []string           `json:"tags"`
+		Priority    string             `json:"priority"`
+		Components  []ProjectComponent `json:"components"`
 	}
 )

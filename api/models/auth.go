@@ -1,7 +1,7 @@
 package models
 
 type (
-	AuthLoginDto struct {
+	AuthLogin struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
