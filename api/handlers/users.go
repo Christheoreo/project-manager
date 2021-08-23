@@ -65,7 +65,7 @@ func (h *UserHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var newUser models.NewUser
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
-		returnErrorResponse(w, http.StatusBadRequest, err)
+		returnStandardResponse(w, http.StatusBadRequest, []string{err.Error()})
 		return
 	}
 
@@ -77,7 +77,7 @@ func (h *UserHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	insertedUser, err := h.UsersService.Insert(newUser)
 	if err != nil {
-		returnErrorResponse(w, http.StatusUnprocessableEntity, err)
+		returnStandardResponse(w, http.StatusUnprocessableEntity, []string{err.Error()})
 		return
 	}
 	returnObjectResponse(w, http.StatusCreated, insertedUser)

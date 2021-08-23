@@ -36,7 +36,7 @@ func (h *TagsHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&newTag)
 	if err != nil {
-		returnErrorResponse(w, http.StatusBadRequest, err)
+		returnStandardResponse(w, http.StatusBadRequest, []string{err.Error()})
 		return
 	}
 
@@ -49,7 +49,7 @@ func (h *TagsHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	tag, err := h.TagsService.Create(newTag, user)
 	if err != nil {
-		returnErrorResponse(w, http.StatusBadRequest, err)
+		returnStandardResponse(w, http.StatusBadRequest, []string{err.Error()})
 		return
 	}
 
@@ -62,7 +62,7 @@ func (h *TagsHandler) GetAllForRequester(w http.ResponseWriter, r *http.Request)
 	tags, err := h.TagsService.GetAll(user)
 
 	if err != nil {
-		returnErrorResponse(w, http.StatusInternalServerError, errors.New("unable to fetch tags"))
+		returnStandardResponse(w, http.StatusInternalServerError, []string{"unable to fetch tags"})
 		return
 	}
 	returnObjectResponse(w, http.StatusCreated, tags)

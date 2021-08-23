@@ -7,19 +7,17 @@ import (
 	"github.com/Christheoreo/project-manager/models"
 )
 
+type (
+	StandardResponse struct {
+		Status   int      `json:"status"`
+		Messages []string `json:"messages"`
+	}
+)
+
 func returnStandardResponse(w http.ResponseWriter, status int, messages []string) {
-	var standardResponse models.StandardResponse = models.StandardResponse{
+	var standardResponse StandardResponse = StandardResponse{
 		Status:   status,
 		Messages: messages,
-	}
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(standardResponse)
-}
-
-func returnErrorResponse(w http.ResponseWriter, status int, err error) {
-	var standardResponse models.StandardResponse = models.StandardResponse{
-		Status:   status,
-		Messages: []string{err.Error()},
 	}
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(standardResponse)

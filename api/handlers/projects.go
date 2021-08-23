@@ -83,7 +83,7 @@ func (p *ProjectsHandler) CreateProjectHandler(w http.ResponseWriter, r *http.Re
 
 	err := json.NewDecoder(r.Body).Decode(&newProject)
 	if err != nil {
-		returnErrorResponse(w, http.StatusBadRequest, err)
+		returnStandardResponse(w, http.StatusBadRequest, []string{err.Error()})
 		return
 	}
 

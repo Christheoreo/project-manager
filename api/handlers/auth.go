@@ -40,7 +40,7 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(&authLogin)
 	if err != nil {
-		returnErrorResponse(w, http.StatusBadRequest, err)
+		returnStandardResponse(w, http.StatusBadRequest, []string{err.Error()})
 		return
 	}
 
@@ -54,7 +54,7 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	jwtToken, err := h.UsersService.ValidateCredentials(authLogin)
 
 	if err != nil {
-		returnErrorResponse(w, http.StatusBadRequest, err)
+		returnStandardResponse(w, http.StatusBadRequest, []string{err.Error()})
 		return
 	}
 
