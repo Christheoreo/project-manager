@@ -1,3 +1,4 @@
+DROP TABLE component_data;
 DROP TABLE components;
 DROP TABLE project_tags;
 DROP TABLE projects;
@@ -44,6 +45,13 @@ create TABLE components (
     "project_id" BIGSERIAL NOT NULL references projects(id),
     "title" VARCHAR(255) NOT NULL,
     "description" VARCHAR(255) NOT NULL
+);
+
+create TABLE component_data (
+    id BIGSERIAL PRIMARY KEY,
+    "component_id" BIGSERIAL NOT NULL references components(id),
+    "key" VARCHAR(255) NOT NULL,
+    "value" TEXT NOT NULL
 );
 
 

@@ -51,6 +51,9 @@ func sortRowsInToProjects(rows pgx.Rows) ([]models.Project, error) {
 	return projects, nil
 }
 
+// this doesnt get tags!!
+// @todo fix
+// @todo get the components!
 func (r *ProjectsRepositoryPostgres) GetByID(ID int) (models.Project, error) {
 	var project models.Project
 	query := `SELECT 
@@ -129,6 +132,26 @@ func (r *ProjectsRepositoryPostgres) Insert(project models.NewProject, user mode
 
 		if err != nil {
 			return -1, err
+		}
+	}
+
+	// Insert the components
+
+	for _, component := range project.Components {
+		var componentID int
+		componentQuery := `INSERT INTO "components" ("project_id", "title", "description") VALUES ($1, $2, $3) RETURNING id`
+		err = r.Pool.QueryRow(context.Background(), componentQuery, id, component.Title, component.Description).Scan(&componentID)
+		if err != nil {
+			return -1, err
+		}
+
+		for key, value := range component.Data {
+			var cdID int
+			componentDataQuery := `INSERT INTO "component_data" ("component_id", "key", "value") VALUES ($1,$2,$3) RETURNING id`
+			err = r.Pool.QueryRow(context.Background(), componentDataQuery, componentID, key, value).Scan(&cdID)
+			if err != nil {
+				return -1, err
+			}
 		}
 	}
 

@@ -2,9 +2,9 @@ package models
 
 type (
 	NewProjectComponent struct {
-		Title       string      `json:"title"`
-		Description string      `json:"description"`
-		Data        interface{} `json:"data"`
+		Title       string            `json:"title"`
+		Description string            `json:"description"`
+		Data        map[string]string `json:"data"`
 	}
 
 	ProjectComponent struct {

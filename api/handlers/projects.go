@@ -54,6 +54,19 @@ func (h *ProjectsHandler) validateNewProjectDto(newProject models.NewProject, us
 		}
 	}
 
+	// Validate the components
+
+	components := newProject.Components
+
+	for _, component := range components {
+		if len(component.Title) < 3 {
+			errorMessages = append(errorMessages, "component 'title' needs to be at least 3 characters")
+		}
+
+		if len(component.Description) < 3 {
+			errorMessages = append(errorMessages, "component 'description' needs to be at least 3 characters")
+		}
+	}
 	// continue validation stuff here
 
 	priorityExists, err := h.PrioritiesService.Exists(newProject.PriorityID)
