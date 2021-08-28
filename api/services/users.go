@@ -30,7 +30,7 @@ func createJwtToken(userId int) (string, error) {
 	token.Claims =
 		&jwt.StandardClaims{
 			Subject:   strconv.Itoa(userId),
-			ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),
+			ExpiresAt: time.Now().Add(time.Minute * 60).Unix(),
 		}
 
 	return token.SignedString(signingKey)

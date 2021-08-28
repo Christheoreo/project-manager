@@ -8,10 +8,10 @@ type (
 	}
 
 	ProjectComponent struct {
-		ID          int         `json:"id"`
-		Title       string      `json:"title"`
-		Description string      `json:"description"`
-		Data        interface{} `json:"data"`
+		ID          int               `json:"id"`
+		Title       string            `json:"title"`
+		Description string            `json:"description"`
+		Data        map[string]string `json:"data"`
 	}
 
 	NewProject struct {
