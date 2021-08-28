@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Christheoreo/project-manager/models"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -12,33 +13,72 @@ type ProjectsRepositoryPostgres struct {
 	Pool *pgxpool.Pool
 }
 
-// @todo get the components
-func (r *ProjectsRepositoryPostgres) GetByID(ID int) (project models.Project, err error) {
-	query := "SELECT p.id, p.title, p.description, pr.name FROM projects p inner join priorities pr on pr.id = p.priority_id where p.id = $1"
-	err = r.Pool.QueryRow(context.Background(), query, ID).Scan(&project.ID, &project.Title, &project.Description, &project.Priority)
-	if err != nil {
-		return
-	}
+// Helper method for sorting query rows in to projects
+func sortRowsInToProjects(rows pgx.Rows) ([]models.Project, error) {
+	projects := make([]models.Project, 0)
 
-	// Get the tags for the project.
-	queryTags := "SELECT t.name FROM tags t inner join project_tags pt on pt.tag_id = t.id where pt.project_id = $1"
-	rowTags, errTags := r.Pool.Query(context.Background(), queryTags, project.ID)
-	if errTags != nil {
-		return
-	}
+	projectsMap := make(map[int]models.Project)
 
-	project.Tags = make([]string, 0)
-	for rowTags.Next() {
+	for rows.Next() {
+		var project models.Project
 		var tag string
-		errTags = rowTags.Scan(&tag)
 
-		if errTags != nil {
-			return
+		if err := rows.Scan(&project.ID, &project.Title, &project.Description, &project.Priority, &tag); err != nil {
+			return projects, err
 		}
 
-		project.Tags = append(project.Tags, tag)
+		p, ok := projectsMap[project.ID]
+
+		if ok {
+			if tag != "" {
+				p.Tags = append(p.Tags, tag)
+				projectsMap[project.ID] = p
+			}
+			continue
+		}
+
+		if tag != "" {
+			project.Tags = []string{tag}
+		} else {
+			project.Tags = make([]string, 0)
+		}
+		projectsMap[project.ID] = project
 	}
-	return
+	for _, p := range projectsMap {
+		projects = append(projects, p)
+	}
+
+	return projects, nil
+}
+
+func (r *ProjectsRepositoryPostgres) GetByID(ID int) (models.Project, error) {
+	var project models.Project
+	query := `SELECT 
+		p.id,
+		p.title,
+		p.description,
+		pr.name,
+		COALESCE(X.name,'')
+	FROM projects p 
+		INNER JOIN priorities pr ON p.priority_id = pr.id
+		LEFT OUTER JOIN 
+	(select * from project_tags pt 
+		INNER JOIN tags t ON pt.tag_id = t.id) as X ON p.id = X.project_id
+	WHERE p.id = $1`
+	rows, err := r.Pool.Query(context.Background(), query, ID)
+	if err != nil {
+		return project, err
+	}
+
+	projects, err := sortRowsInToProjects(rows)
+
+	if err != nil {
+		return project, err
+	}
+
+	project = projects[0]
+
+	return project, nil
 }
 
 func (r *ProjectsRepositoryPostgres) GetByUser(user models.User) ([]models.Project, error) {
@@ -60,40 +100,7 @@ func (r *ProjectsRepositoryPostgres) GetByUser(user models.User) ([]models.Proje
 	if err != nil {
 		return projects, err
 	}
-
-	projectsMap := make(map[int]models.Project)
-
-	for rows.Next() {
-		var project models.Project
-		var tag string
-
-		if err = rows.Scan(&project.ID, &project.Title, &project.Description, &project.Priority, &tag); err != nil {
-			return projects, err
-		}
-
-		p, ok := projectsMap[project.ID]
-
-		if ok {
-			if tag != "" {
-				p.Tags = append(p.Tags, tag)
-				projectsMap[project.ID] = p
-			}
-			continue
-		}
-
-		project.Tags = make([]string, 0)
-		projectsMap[project.ID] = project
-
-		if tag != "" {
-			project.Tags = append(project.Tags, tag)
-			projectsMap[project.ID] = project
-		}
-	}
-	for _, p := range projectsMap {
-		projects = append(projects, p)
-	}
-
-	return projects, nil
+	return sortRowsInToProjects(rows)
 }
 
 func (r *ProjectsRepositoryPostgres) TitleTaken(title string, userID int) (bool, error) {
@@ -130,7 +137,7 @@ func (r *ProjectsRepositoryPostgres) Insert(project models.NewProject, user mode
 
 func (r *ProjectsRepositoryPostgres) GetOwnerID(ID int) (int, error) {
 	var userID int
-	query := "SELECT user_id FROM projects WHERE p.id = $1"
+	query := `SELECT "user_id" FROM "projects" WHERE "id" = $1`
 	err := r.Pool.QueryRow(context.Background(), query, ID).Scan(&userID)
 	if err != nil {
 		return -1, err
