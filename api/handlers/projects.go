@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/Christheoreo/project-manager/interfaces"
 	"github.com/Christheoreo/project-manager/models"
+	"github.com/gorilla/mux"
 )
 
 type (
@@ -110,6 +112,32 @@ func (p *ProjectsHandler) GetMyProjects(w http.ResponseWriter, r *http.Request) 
 	projects, err := p.ProjectsService.All(user)
 
 	if err != nil {
+		returnStandardResponse(w, http.StatusInternalServerError, []string{"Unable to fetch projects."})
+		return
+	}
+	returnObjectResponse(w, http.StatusCreated, projects)
+}
+
+func (p *ProjectsHandler) GetMyProject(w http.ResponseWriter, r *http.Request) {
+	user := getUser(r)
+	vars := mux.Vars(r)
+	idS, ok := vars["projectID"]
+
+	if !ok {
+		returnStandardResponse(w, 422, []string{"No ProjectID provided."})
+		return
+	}
+
+	id, err := strconv.Atoi(idS)
+
+	if err != nil {
+		returnStandardResponse(w, 422, []string{"Invalid ProjectID"})
+		return
+	}
+	projects, err := p.ProjectsService.Get(id, user)
+
+	if err != nil {
+		fmt.Printf("Error: %s", err.Error())
 		returnStandardResponse(w, http.StatusInternalServerError, []string{"Unable to fetch projects."})
 		return
 	}
