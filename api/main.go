@@ -105,6 +105,7 @@ func main() {
 	pR.HandleFunc("/tags", tagsHandler.GetAllForRequester).Methods(http.MethodGet, http.MethodOptions)
 	pR.HandleFunc("/projects", projectsHandler.CreateProjectHandler).Methods(http.MethodPost, http.MethodOptions)
 	pR.HandleFunc("/projects", projectsHandler.GetMyProjects).Methods(http.MethodGet, http.MethodOptions)
+	pR.HandleFunc("/projects/{projectID}", projectsHandler.GetMyProject).Methods(http.MethodGet, http.MethodOptions)
 
 	port := fmt.Sprintf(":%s", os.Getenv("PORT"))
 	http.ListenAndServe(port, r)
