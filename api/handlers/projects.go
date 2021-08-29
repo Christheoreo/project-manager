@@ -136,6 +136,8 @@ func (p *ProjectsHandler) GetMyProject(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idS, ok := vars["projectID"]
 
+	fmt.Printf("vars %s\n", vars)
+
 	if !ok {
 		returnStandardResponse(w, 422, []string{"No ProjectID provided."})
 		return
@@ -147,12 +149,12 @@ func (p *ProjectsHandler) GetMyProject(w http.ResponseWriter, r *http.Request) {
 		returnStandardResponse(w, 422, []string{"Invalid ProjectID"})
 		return
 	}
-	projects, err := p.ProjectsService.Get(id, user)
+	project, err := p.ProjectsService.Get(id, user)
 
 	if err != nil {
-		fmt.Printf("Error: %s", err.Error())
+		fmt.Printf("\n\n\nError: %s\n", err.Error())
 		returnStandardResponse(w, http.StatusInternalServerError, []string{"Unable to fetch projects."})
 		return
 	}
-	returnObjectResponse(w, http.StatusCreated, projects)
+	returnObjectResponse(w, http.StatusCreated, project)
 }

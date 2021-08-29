@@ -8,10 +8,16 @@ type (
 	}
 
 	ProjectComponent struct {
-		ID          int               `json:"id"`
-		Title       string            `json:"title"`
-		Description string            `json:"description"`
-		Data        map[string]string `json:"data"`
+		ID          int             `json:"id"`
+		Title       string          `json:"title"`
+		Description string          `json:"description"`
+		Data        []ComponentData `json:"data"`
+	}
+
+	ComponentData struct {
+		ID    int    `json:"id"`
+		Key   string `json:"key"`
+		Value string `json:"value"`
 	}
 
 	NewProject struct {

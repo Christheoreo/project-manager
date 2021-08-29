@@ -14,7 +14,7 @@ type ProjectsRepositoryPostgres struct {
 }
 
 // Helper method for sorting query rows in to projects
-func sortRowsInToProjects(rows pgx.Rows) ([]models.Project, error) {
+func sortRowsInToProjectsNew(rows pgx.Rows) ([]models.Project, error) {
 	projects := make([]models.Project, 0)
 
 	projectsMap := make(map[int]models.Project)
@@ -23,15 +23,71 @@ func sortRowsInToProjects(rows pgx.Rows) ([]models.Project, error) {
 		var project models.Project
 		var tag string
 
-		if err := rows.Scan(&project.ID, &project.Title, &project.Description, &project.Priority, &tag); err != nil {
+		var component models.ProjectComponent
+		var data models.ComponentData
+
+		if err := rows.Scan(&project.ID, &project.Title, &project.Description, &project.Priority, &tag, &component.ID, &component.Title, &component.Description, &data.ID, &data.Key, &data.Value); err != nil {
 			return projects, err
 		}
 
+		if data.ID != -1 {
+			component.Data = []models.ComponentData{data}
+		}
 		p, ok := projectsMap[project.ID]
 
 		if ok {
 			if tag != "" {
-				p.Tags = append(p.Tags, tag)
+				// check if the tag exists
+				tagExists := false
+				for _, t := range p.Tags {
+					if t == tag {
+						tagExists = true
+						break
+					}
+				}
+
+				if !tagExists {
+					p.Tags = append(p.Tags, tag)
+					projectsMap[project.ID] = p
+				}
+			}
+
+			// Check if the component exists
+
+			if component.ID != -1 {
+				componentExists := false
+
+				for i, c := range p.Components {
+					if c.ID == component.ID {
+						componentExists = true
+						// we know it exists, now check if the data exists
+						if data.ID != -1 {
+							// check if the data exists in the components
+							dataExists := false
+							for _, y := range c.Data {
+								if y.ID == data.ID {
+									dataExists = true
+									break
+								}
+							}
+							// we only care if it does not exist.
+							if !dataExists {
+								c.Data = append(c.Data, data)
+								p.Components[i] = c
+							}
+						}
+						break
+					} else {
+						p.Components = append(p.Components, component)
+					}
+				}
+
+				// update
+
+				if !componentExists {
+					// the component doesnt exists, so add the component and any data
+					// p.Components = append(p.Components, component)
+				}
 				projectsMap[project.ID] = p
 			}
 			continue
@@ -42,6 +98,12 @@ func sortRowsInToProjects(rows pgx.Rows) ([]models.Project, error) {
 		} else {
 			project.Tags = make([]string, 0)
 		}
+
+		if component.ID != -1 {
+			project.Components = []models.ProjectComponent{component}
+		} else {
+			project.Components = make([]models.ProjectComponent, 0)
+		}
 		projectsMap[project.ID] = project
 	}
 	for _, p := range projectsMap {
@@ -51,141 +113,75 @@ func sortRowsInToProjects(rows pgx.Rows) ([]models.Project, error) {
 	return projects, nil
 }
 
-// @todo get the components!
 func (r *ProjectsRepositoryPostgres) GetByID(ID int) (models.Project, error) {
 	var project models.Project
 
 	//this gets everything in one go, but a lot of data filtering has to happen
-	// 	query := `SELECT
-	// 	p.id,
-	// 	p.title,
-	// 	p.description,
-	// 	pr.name,
-	// 	COALESCE(X.name,''),
-	//         COALESCE(c.id,-1)  as componentID,
-	//         COALESCE(c.title, '')  as componentTitle,
-	//         COALESCE(c.description, '')  as componentDescription,
-	//         COALESCE(cd.id, -1)  as cdID,
-	//         COALESCE(cd.key, '')  as cdKey,
-	//         COALESCE(cd.value, '')  as cdValue
-
-	// FROM projects p
-	// 	INNER JOIN priorities pr ON p.priority_id = pr.id
-
-	// 	LEFT OUTER JOIN
-	// (select * from project_tags pt
-	// 	INNER JOIN tags t ON pt.tag_id = t.id) as X ON p.id = X.project_id
-	// 			LEFT OUTER JOIN
-	// 				components c  ON c.project_id = p.id
-	// LEFT OUTER JOIN component_data cd ON cd.component_id = c.id
-	// WHERE p.id = $1`
-
 	query := `SELECT
-			p.id,
-			p.title,
-			p.description,
-			pr.name
-		FROM projects p
-			INNER JOIN priorities pr ON p.priority_id = pr.id
-			WHERE p.id = $1`
-
-	err := r.Pool.QueryRow(context.Background(), query, ID).Scan(&project.ID, &project.Title, &project.Description, &project.Priority)
-	if err != nil {
-		return project, err
-	}
-
-	// now get the tags
-
-	queryTags := `SELECT
-		t.name
-	FROM tags t
-	INNER JOIN "project_tags" pt
-		on pt.tag_id = t.id
-	WHERE pt.project_id = $1`
-	rowTags, errTags := r.Pool.Query(context.Background(), queryTags, project.ID)
-	if errTags != nil {
-		return project, err
-	}
-
-	project.Tags = make([]string, 0)
-	for rowTags.Next() {
-		var tag string
-		errTags = rowTags.Scan(&tag)
-		if errTags != nil {
-			return project, errTags
-		}
-		project.Tags = append(project.Tags, tag)
-	}
-
-	// Now get the components + component Data.
-
-	componentsQuery := `SELECT 
-	c.id,
-	 c.title,
-	 c.description,
-	 COALESCE(cd.id, -1)  as cdID,
-	 COALESCE(cd.key, '')  as cdKey,
-	 COALESCE(cd.value, '')  as cdValue
-FROM components c 
-LEFT OUTER JOIN component_data cd ON cd.component_id = c.id where c.project_id = $1`
-
-	rowComponents, errComponents := r.Pool.Query(context.Background(), componentsQuery, project.ID)
-	if errComponents != nil {
-		return project, errComponents
-	}
-
-	project.Components = make([]models.ProjectComponent, 0)
-	for rowComponents.Next() {
-		var (
-			id          int
-			title       string
-			description string
-			dataID      int
-			dataKey     string
-			dataValue   string
-		)
-		errComponents = rowTags.Scan(&id, &title, &description, &dataID, &dataKey, &dataValue)
-		if errComponents != nil {
-			return project, errComponents
-		}
-		c := models.ProjectComponent{
-			ID:          id,
-			Title:       title,
-			Description: description,
-			Data:        map[string]string{},
-		}
-		//test above and add the data for the component
-		project.Components = append(project.Components, c)
-	}
-
-	//test above
-	if err != nil {
-		return project, err
-	}
-
-	return project, nil
-}
-
-func (r *ProjectsRepositoryPostgres) GetByUser(user models.User) ([]models.Project, error) {
-	projects := make([]models.Project, 0)
-
-	query := `SELECT 
 		p.id,
 		p.title,
 		p.description,
 		pr.name,
-		COALESCE(X.name,'')
-	FROM projects p 
+		COALESCE(X.name,''),
+	        COALESCE(c.id,-1)  as componentID,
+	        COALESCE(c.title, '')  as componentTitle,
+	        COALESCE(c.description, '')  as componentDescription,
+	        COALESCE(cd.id, -1)  as cdID,
+	        COALESCE(cd.key, '')  as cdKey,
+	        COALESCE(cd.value, '')  as cdValue
+
+	FROM projects p
 		INNER JOIN priorities pr ON p.priority_id = pr.id
-		LEFT OUTER JOIN 
-	(select * from project_tags pt 
+
+		LEFT OUTER JOIN
+	(select * from project_tags pt
 		INNER JOIN tags t ON pt.tag_id = t.id) as X ON p.id = X.project_id
+				LEFT OUTER JOIN
+					components c  ON c.project_id = p.id
+	LEFT OUTER JOIN component_data cd ON cd.component_id = c.id
+	WHERE p.id = $1`
+
+	rows, err := r.Pool.Query(context.Background(), query, ID)
+	if err != nil {
+		return project, err
+	}
+	projects, err := sortRowsInToProjectsNew(rows)
+	if err != nil {
+		return project, err
+	}
+	return projects[0], err
+}
+
+func (r *ProjectsRepositoryPostgres) GetByUser(user models.User) ([]models.Project, error) {
+	projects := make([]models.Project, 0)
+	query := `SELECT
+		p.id,
+		p.title,
+		p.description,
+		pr.name,
+		COALESCE(X.name,'') as projectName,
+	        COALESCE(c.id,-1)  as componentID,
+	        COALESCE(c.title, '')  as componentTitle,
+	        COALESCE(c.description, '')  as componentDescription,
+	        COALESCE(cd.id, -1)  as cdID,
+	        COALESCE(cd.key, '')  as cdKey,
+	        COALESCE(cd.value, '')  as cdValue
+
+	FROM projects p
+		INNER JOIN priorities pr ON p.priority_id = pr.id
+
+		LEFT OUTER JOIN
+	(select * from project_tags pt
+		INNER JOIN tags t ON pt.tag_id = t.id) as X ON p.id = X.project_id
+				LEFT OUTER JOIN
+					components c  ON c.project_id = p.id
+	LEFT OUTER JOIN component_data cd ON cd.component_id = c.id
 	WHERE p.user_id = $1`
 	rows, err := r.Pool.Query(context.Background(), query, user.ID)
 	if err != nil {
 		return projects, err
 	}
-	return sortRowsInToProjects(rows)
+	return sortRowsInToProjectsNew(rows)
 }
 
 func (r *ProjectsRepositoryPostgres) TitleTaken(title string, userID int) (bool, error) {
