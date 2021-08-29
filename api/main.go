@@ -106,6 +106,8 @@ func main() {
 	pR.HandleFunc("/projects", projectsHandler.CreateProjectHandler).Methods(http.MethodPost, http.MethodOptions)
 	pR.HandleFunc("/projects", projectsHandler.GetMyProjects).Methods(http.MethodGet, http.MethodOptions)
 	pR.HandleFunc("/projects/{projectID}", projectsHandler.GetMyProject).Methods(http.MethodGet, http.MethodOptions)
+	// @todo add update method for project
+	// @todo edit sql -> need a completed status field (Not started, Planning, in progress, paused, completed.).
 
 	port := fmt.Sprintf(":%s", os.Getenv("PORT"))
 	http.ListenAndServe(port, r)
