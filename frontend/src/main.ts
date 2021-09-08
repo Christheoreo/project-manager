@@ -1,10 +1,17 @@
-import App from './App.svelte';
-import 'bootstrap/dist/css/bootstrap.min.css';
-const app = new App({
-	target: document.body,
-	props: {
-		name: 'world'
-	}
-});
+import Vue from "vue";
+import App from "./App.vue";
+import router from "./router";
+import store from "./store";
+import axios from "@/axios";
 
-export default app;
+import "@/assets/scss/main.scss";
+
+Vue.config.productionTip = false;
+
+Vue.use(axios);
+
+new Vue({
+  router,
+  store,
+  render: (h) => h(App),
+}).$mount("#app");

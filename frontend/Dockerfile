@@ -3,12 +3,10 @@ FROM node:14
 WORKDIR /usr/src/app/frontend
 
 COPY package*.json ./
-COPY pnpm-lock.yaml ./
+COPY yarn.lock ./
 
-RUN npm install pnpm -g
+RUN yarn install
 
-RUN pnpm install
+EXPOSE 8080
 
-EXPOSE 5000
-
-CMD ["pnpm", "run", "dev"]
+CMD ["yarn", "serve"]
